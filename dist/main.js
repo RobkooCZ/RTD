@@ -1,4 +1,37 @@
 "use strict";
+class BasicEnemy {
+    speed;
+    x;
+    y;
+    size; // Size of the enemy
+    constructor(speed, x, y) {
+        this.speed = speed;
+        this.x = x;
+        this.y = y;
+        this.size = 25; // Define the size of the enemy
+    }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    // Method to render the enemy on the canvas
+    render(ctx) {
+        ctx.fillStyle = 'white'; // Set the color of the enemy
+        ctx.beginPath();
+        // Center the enemy in the grid cell
+        const centeredX = this.x + (50 - this.size) / 2; // Assuming each grid cell is 50x50
+        const centeredY = this.y + (50 - this.size) / 2; // Center it vertically
+        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
+        ctx.fill();
+    }
+    // Method to erase the enemy (draws over its previous position)
+    erase(ctx) {
+        ctx.fillStyle = 'brown'; // Assuming the background is brown
+        const centeredX = this.x + (50 - this.size) / 2; // Centered X
+        const centeredY = this.y + (50 - this.size) / 2; // Centered Y
+        ctx.fillRect(centeredX, centeredY, this.size, this.size); // Draw over to "erase"
+    }
+}
 class BasicTower {
     range;
     damage;
@@ -27,6 +60,7 @@ class BasicTower {
 const message = 'Basic map and tower render';
 document.body.innerHTML = `<h1>${message}</h1>`;
 /// <reference path="basicTower.ts" />
+/// <reference path="basicEnemy.ts" />
 document.addEventListener('DOMContentLoaded', () => {
     const map = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -79,14 +113,78 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    // Render the map
+    // Create and render the enemy
+    const basicEnemy = new BasicEnemy(1, 350, 450); // Example enemy initialization
+    // Render the map and then the enemy
     if (ctx) {
+        // Render the map first
         for (let i = 0; i < map.length; i++) {
             for (let j = 0; j < map[i].length; j++) {
                 ctx.fillStyle = map[i][j] === 1 ? 'brown' : 'green';
                 ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
             }
         }
+        // Then render the enemy
+        basicEnemy.render(ctx);
+        let enemyPositionX = basicEnemy.x;
+        let enemyPositionY = basicEnemy.y;
+        let gridX = enemyPositionX / rectSize;
+        let gridY = enemyPositionY / rectSize;
+        let lastGridX = -1; // Initialize last grid position
+        let lastGridY = -1; // Initialize last grid position
+        setInterval(() => {
+            // Calculate the grid position based on the current enemy position
+            const gridX = Math.floor(enemyPositionX / rectSize);
+            const gridY = Math.floor(enemyPositionY / rectSize);
+            // Check if the enemy can move right
+            if (gridY >= 0 && gridY < map.length &&
+                gridX + 1 >= 0 && gridX + 1 < map[gridY].length &&
+                map[gridY][gridX + 1] === 1 && (lastGridX !== gridX + 1 || lastGridY !== gridY)) {
+                basicEnemy.erase(ctx);
+                enemyPositionX += rectSize; // Move right
+                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
+                basicEnemy.render(ctx);
+                // Update the last position
+                lastGridX = gridX;
+                lastGridY = gridY;
+            }
+            // Check if the enemy can move left
+            else if (gridY >= 0 && gridY < map.length &&
+                gridX - 1 >= 0 && gridX - 1 < map[gridY].length &&
+                map[gridY][gridX - 1] === 1 && (lastGridX !== gridX - 1 || lastGridY !== gridY)) {
+                basicEnemy.erase(ctx);
+                enemyPositionX -= rectSize; // Move left
+                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
+                basicEnemy.render(ctx);
+                // Update the last position
+                lastGridX = gridX;
+                lastGridY = gridY;
+            }
+            // Check if the enemy can move down
+            else if (gridY + 1 < map.length &&
+                gridX >= 0 && gridX < map[gridY + 1].length &&
+                map[gridY + 1][gridX] === 1 && (lastGridX !== gridX || lastGridY !== gridY + 1)) {
+                basicEnemy.erase(ctx);
+                enemyPositionY += rectSize; // Move down
+                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
+                basicEnemy.render(ctx);
+                // Update the last position
+                lastGridX = gridX;
+                lastGridY = gridY;
+            }
+            // Check if the enemy can move up
+            else if (gridY - 1 >= 0 &&
+                gridX >= 0 && gridX < map[gridY - 1].length &&
+                map[gridY - 1][gridX] === 1 && (lastGridX !== gridX || lastGridY !== gridY - 1)) {
+                basicEnemy.erase(ctx);
+                enemyPositionY -= rectSize; // Move up
+                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
+                basicEnemy.render(ctx);
+                // Update the last position
+                lastGridX = gridX;
+                lastGridY = gridY;
+            }
+        }, 1000);
     }
     else {
         console.error("Canvas context is not available");
