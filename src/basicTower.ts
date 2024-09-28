@@ -1,9 +1,9 @@
 class BasicTower {
-    private range: number;
-    private damage: number;
-    private fireRate: number;
-    private x: number;
-    private y: number;
+    range: number;
+    damage: number;
+    fireRate: number;
+    x: number;
+    y: number;
 
     constructor(range: number, damage: number, fireRate: number, x: number, y: number) {
         this.range = range;
@@ -24,5 +24,11 @@ class BasicTower {
         ctx.beginPath();
         ctx.rect(this.x, this.y, 50, 50);
         ctx.fill();
+
+        // Draw the range of the tower
+        ctx.strokeStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(this.x + 25, this.y + 25, this.range, 0, 2 * Math.PI);
+        ctx.stroke();
     }
 }

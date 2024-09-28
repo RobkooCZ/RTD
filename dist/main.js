@@ -1,4 +1,54 @@
 "use strict";
+class BasicBullet {
+    damage;
+    x; // Current position of the bullet
+    y; // Current position of the bullet
+    targetX; // Target position (center of the enemy)
+    targetY; // Target position (center of the enemy)
+    constructor(damage, towerX, towerY, enemyX, enemyY) {
+        this.damage = damage;
+        // Center the bullet at the tower's position
+        this.x = towerX + (50 - 10) / 2;
+        this.y = towerY + (50 - 10) / 2;
+        // Center the target at the enemy's position 
+        this.targetX = enemyX + (50 - 10) / 2;
+        this.targetY = enemyY + (50 - 10) / 2;
+    }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    // Method to render the bullet on the canvas
+    render(ctx) {
+        ctx.fillStyle = 'black'; // Set the color of the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, 10, 10); // Bullet size
+        ctx.fill();
+    }
+    move(ctx) {
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        if (magnitude === 0) {
+            return; // Already at target position, exit the function
+        }
+        const speed = 5;
+        // Calculate normalized direction vector
+        const directionX = dx / magnitude;
+        const directionY = dy / magnitude;
+        // Update position
+        this.x += directionX * speed;
+        this.y += directionY * speed;
+        // Check for overshooting and snap to target if necessary
+        const distToTarget = Math.sqrt((this.targetX - this.x) ** 2 + (this.targetY - this.y) ** 2);
+        if (distToTarget < speed) {
+            this.x = this.targetX;
+            this.y = this.targetY;
+        }
+        // Render bullet
+        this.render(ctx);
+    }
+}
 class BasicEnemy {
     speed;
     x;
@@ -55,12 +105,18 @@ class BasicTower {
         ctx.beginPath();
         ctx.rect(this.x, this.y, 50, 50);
         ctx.fill();
+        // Draw the range of the tower
+        ctx.strokeStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(this.x + 25, this.y + 25, this.range, 0, 2 * Math.PI);
+        ctx.stroke();
     }
 }
 const message = 'Basic map and tower render';
 document.body.innerHTML = `<h1>${message}</h1>`;
 /// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
+/// <reference path="basicBullet.ts" />
 document.addEventListener('DOMContentLoaded', () => {
     const map = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -74,11 +130,33 @@ document.addEventListener('DOMContentLoaded', () => {
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
     ];
+    const enemyPath = [
+        { x: 350, y: 450 },
+        { x: 350, y: 400 },
+        { x: 350, y: 350 },
+        { x: 350, y: 300 },
+        { x: 350, y: 250 },
+        { x: 350, y: 200 },
+        { x: 300, y: 200 },
+        { x: 250, y: 200 },
+        { x: 200, y: 200 },
+        { x: 150, y: 200 },
+        { x: 100, y: 200 },
+        { x: 100, y: 150 },
+        { x: 100, y: 100 },
+        { x: 100, y: 50 },
+        { x: 100, y: 0 },
+    ];
+    let currentPathIndex = 0;
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
-    let cursorX = 0;
-    let cursorY = 0;
     const rectSize = 50; // Size of each grid cell
+    let towerArray = []; // Array to store the towers
+    let bullets = []; // Array to store bullets
+    const basicEnemy = new BasicEnemy(1, 350, 450); // Example enemy initialization
+    let cursorX = 0; // Initialize cursorX
+    let cursorY = 0; // Initialize cursorY
+    // Mouse movement for cursor position
     document.addEventListener('mousemove', (event) => {
         cursorX = event.clientX - 32; // Adjust cursor position
         cursorY = event.clientY - 100; // Adjust cursor position
@@ -87,22 +165,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function snapToGrid(value) {
         return Math.round(value / rectSize) * rectSize;
     }
+    // Handle tower placement
     document.addEventListener('keydown', (event) => {
         if (event.key === 'e') {
-            // Snap cursor coordinates to the grid
             const snappedX = snapToGrid(cursorX);
             const snappedY = snapToGrid(cursorY);
-            // Determine the grid position based on snapped coordinates
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
             // Check if the position is valid for tower placement
             if (gridY >= 0 && gridY < map.length && gridX >= 0 && gridX < map[0].length) {
                 if (map[gridY][gridX] === 0) { // Valid placement check (0 means free)
-                    const tower = new BasicTower(50, 10, 1, snappedX, snappedY);
-                    if (ctx) {
-                        tower.render(ctx); // Render the tower
+                    // Check if a tower already exists at this grid position
+                    if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
+                        const tower = new BasicTower(125, 10, 1, snappedX, snappedY);
+                        towerArray.push(tower); // Add the tower to the array
+                        if (ctx) {
+                            tower.render(ctx); // Render the tower
+                        }
                     }
-                    console.log(`Tower placed at (${snappedX}, ${snappedY})`); // Debugging statement
+                    else {
+                        console.log('Tower not placed: A tower already exists at this position.');
+                    }
                 }
                 else {
                     console.log('Tower not placed: Invalid position (path)');
@@ -113,80 +196,75 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    // Create and render the enemy
-    const basicEnemy = new BasicEnemy(1, 350, 450); // Example enemy initialization
-    // Render the map and then the enemy
-    if (ctx) {
-        // Render the map first
-        for (let i = 0; i < map.length; i++) {
-            for (let j = 0; j < map[i].length; j++) {
-                ctx.fillStyle = map[i][j] === 1 ? 'brown' : 'green';
-                ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
+    // Initial rendering of the map and enemy
+    function renderMapAndEnemy() {
+        if (ctx) {
+            for (let i = 0; i < map.length; i++) {
+                for (let j = 0; j < map[i].length; j++) {
+                    ctx.fillStyle = map[i][j] === 1 ? 'brown' : 'green';
+                    ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
+                }
             }
+            basicEnemy.render(ctx);
         }
-        // Then render the enemy
-        basicEnemy.render(ctx);
-        let enemyPositionX = basicEnemy.x;
-        let enemyPositionY = basicEnemy.y;
-        let gridX = enemyPositionX / rectSize;
-        let gridY = enemyPositionY / rectSize;
-        let lastGridX = -1; // Initialize last grid position
-        let lastGridY = -1; // Initialize last grid position
-        setInterval(() => {
-            // Calculate the grid position based on the current enemy position
-            const gridX = Math.floor(enemyPositionX / rectSize);
-            const gridY = Math.floor(enemyPositionY / rectSize);
-            // Check if the enemy can move right
-            if (gridY >= 0 && gridY < map.length &&
-                gridX + 1 >= 0 && gridX + 1 < map[gridY].length &&
-                map[gridY][gridX + 1] === 1 && (lastGridX !== gridX + 1 || lastGridY !== gridY)) {
-                basicEnemy.erase(ctx);
-                enemyPositionX += rectSize; // Move right
-                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
-                basicEnemy.render(ctx);
-                // Update the last position
-                lastGridX = gridX;
-                lastGridY = gridY;
-            }
-            // Check if the enemy can move left
-            else if (gridY >= 0 && gridY < map.length &&
-                gridX - 1 >= 0 && gridX - 1 < map[gridY].length &&
-                map[gridY][gridX - 1] === 1 && (lastGridX !== gridX - 1 || lastGridY !== gridY)) {
-                basicEnemy.erase(ctx);
-                enemyPositionX -= rectSize; // Move left
-                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
-                basicEnemy.render(ctx);
-                // Update the last position
-                lastGridX = gridX;
-                lastGridY = gridY;
-            }
-            // Check if the enemy can move down
-            else if (gridY + 1 < map.length &&
-                gridX >= 0 && gridX < map[gridY + 1].length &&
-                map[gridY + 1][gridX] === 1 && (lastGridX !== gridX || lastGridY !== gridY + 1)) {
-                basicEnemy.erase(ctx);
-                enemyPositionY += rectSize; // Move down
-                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
-                basicEnemy.render(ctx);
-                // Update the last position
-                lastGridX = gridX;
-                lastGridY = gridY;
-            }
-            // Check if the enemy can move up
-            else if (gridY - 1 >= 0 &&
-                gridX >= 0 && gridX < map[gridY - 1].length &&
-                map[gridY - 1][gridX] === 1 && (lastGridX !== gridX || lastGridY !== gridY - 1)) {
-                basicEnemy.erase(ctx);
-                enemyPositionY -= rectSize; // Move up
-                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
-                basicEnemy.render(ctx);
-                // Update the last position
-                lastGridX = gridX;
-                lastGridY = gridY;
-            }
-        }, 1000);
     }
-    else {
-        console.error("Canvas context is not available");
+    // Start rendering and movement
+    function gameLoop() {
+        if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            renderMapAndEnemy(); // Render the map and enemy
+            // Render all towers
+            towerArray.forEach(tower => {
+                tower.render(ctx);
+            });
+            // Move and render bullets
+            bullets.forEach((bullet, index) => {
+                bullet.move(ctx); // Move the bullet
+                bullet.render(ctx); // Render the bullet
+                // Remove bullet if it reached the target
+                if (bullet.x === bullet.targetX && bullet.y === bullet.targetY) {
+                    bullets.splice(index, 1); // Remove bullet from the array
+                }
+            });
+            // Move the enemy
+            moveEnemy();
+        }
+        requestAnimationFrame(gameLoop); // Call gameLoop again for the next frame
     }
+    function moveEnemy() {
+        if (ctx && currentPathIndex < enemyPath.length) { // Ensure ctx is not null and path index is valid
+            const target = enemyPath[currentPathIndex];
+            let enemyPositionX = basicEnemy.x;
+            let enemyPositionY = basicEnemy.y;
+            const dx = target.x - enemyPositionX;
+            const dy = target.y - enemyPositionY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const speed = 0.3; // Adjust speed for smoother movement
+            if (distance < speed) {
+                // Snap to the target position if close enough
+                basicEnemy.setPosition(target.x, target.y);
+                currentPathIndex++; // Move to the next point in the path
+            }
+            else {
+                // Move towards the target position
+                basicEnemy.erase(ctx);
+                enemyPositionX += (dx / distance) * speed;
+                enemyPositionY += (dy / distance) * speed;
+                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
+                basicEnemy.render(ctx);
+            }
+            // Check if the enemy can attack towers
+            towerArray.forEach(tower => {
+                const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
+                if (distanceToTower <= tower.range) {
+                    console.log(`Enemy in range of tower ${tower}`); // Assuming tower has a toString method
+                    const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                    bullets.push(bullet); // Store bullet in the bullets array
+                }
+            });
+        }
+    }
+    // Start the game loop
+    renderMapAndEnemy();
+    requestAnimationFrame(gameLoop); // Start the animation
 });
