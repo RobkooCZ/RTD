@@ -1,7 +1,8 @@
 .staticInfo {
     position: absolute;
-    top: 20%;
-    left: 55%;
+    top: 42%;
+    left: 90%;
+    width: 100%;
     transform: translate(-50%, -50%);
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: 5vh;
