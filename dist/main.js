@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let towerArray = []; // Array to store the towers
     let bullets = []; // Array to store bullets
     const basicEnemy = new BasicEnemy(1, 350, 450); // Example enemy initialization
+    let enemySpawn = false;
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
     // Mouse movement for cursor position
@@ -165,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function snapToGrid(value) {
         return Math.round(value / rectSize) * rectSize;
     }
-    // Handle tower placement
+    // toggle to spawn a tower
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'e') {
+        if (event.key === 't') {
             const snappedX = snapToGrid(cursorX);
             const snappedY = snapToGrid(cursorY);
             const gridX = snappedX / rectSize; // Column index
@@ -196,6 +197,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    // toggle to reset the game
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'r') {
+            towerArray = []; // Reset the tower array
+            bullets = []; // Reset the bullets array
+            enemySpawn = false; // Stop enemy movement
+            currentPathIndex = 0; // Reset the path index
+            basicEnemy.setPosition(350, 450); // Reset the enemy position
+        }
+    });
+    // toggle to let the enemy move
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'e') {
+            if (ctx)
+                basicEnemy.render(ctx);
+            enemySpawn = true;
+        }
+    });
     // Initial rendering of the map and enemy
     function renderMapAndEnemy() {
         if (ctx) {
@@ -205,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
                 }
             }
-            basicEnemy.render(ctx);
         }
     }
     // Start rendering and movement
@@ -227,7 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             // Move the enemy
-            moveEnemy();
+            if (enemySpawn)
+                moveEnemy();
         }
         requestAnimationFrame(gameLoop); // Call gameLoop again for the next frame
     }
