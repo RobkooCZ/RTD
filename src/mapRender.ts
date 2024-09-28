@@ -34,15 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 100, y: 0 },
     ];
 
-    let currentPathIndex = 0;
-
     const canvas = document.getElementById('mapCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     const rectSize = 50; // Size of each grid cell
     let towerArray: BasicTower[] = []; // Array to store the towers
     let bullets: BasicBullet[] = []; // Array to store bullets
-    const basicEnemy: BasicEnemy = new BasicEnemy(1, 350, 450); // Example enemy initialization
-    let enemySpawn = false;
+    let enemies: BasicEnemy[] = []; // Array to store enemies
+    let currentPathIndex: number[] = []; // Array to track path indices for multiple enemies
 
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
@@ -96,22 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'r') {
             towerArray = []; // Reset the tower array
             bullets = []; // Reset the bullets array
-            enemySpawn = false; // Stop enemy movement
-            currentPathIndex = 0; // Reset the path index
-            basicEnemy.setPosition(350, 450); // Reset the enemy position
+            enemies = []; // Reset the enemies array
+            currentPathIndex = []; // Reset the path index for enemies
         }
     });
 
     // toggle to let the enemy move
     document.addEventListener('keydown', (event) => {
         if (event.key === 'e') {
-            if (ctx) basicEnemy.render(ctx);
-            enemySpawn = true;
+            spawnEnemy(); // Spawn a new enemy
         }
     });
 
-    // Initial rendering of the map and enemy
-    function renderMapAndEnemy() {
+    // Initial rendering of the map
+    function renderMap() {
         if (ctx) {
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
@@ -122,11 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function spawnEnemy() {
+        // Create a new enemy at the start position and push it into the enemies array
+        const newEnemy = new BasicEnemy(0.3, 350, 450); // Assuming BasicEnemy constructor takes speed and x, y coordinates
+        enemies.push(newEnemy);
+        currentPathIndex.push(0); // Start at the beginning of the path for this enemy
+    }
+
     // Start rendering and movement
     function gameLoop() {
         if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-            renderMapAndEnemy(); // Render the map and enemy
+            renderMap(); // Render the map
             
             // Render all towers
             towerArray.forEach(tower => {
@@ -136,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Move and render bullets
             bullets.forEach((bullet, index) => {
                 bullet.move(ctx); // Move the bullet
-                bullet.render(ctx); // Render the bullet
                 
                 // Remove bullet if it reached the target
                 if (bullet.x === bullet.targetX && bullet.y === bullet.targetY) {
@@ -144,50 +146,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Move the enemy
-            if (enemySpawn) moveEnemy();
+            // Move all enemies
+            if (enemies.length > 0) {
+                moveEnemies();
+            }
         }
         requestAnimationFrame(gameLoop); // Call gameLoop again for the next frame
     }
 
-    function moveEnemy() {
-        if (ctx && currentPathIndex < enemyPath.length) { // Ensure ctx is not null and path index is valid
-            const target = enemyPath[currentPathIndex];
-            let enemyPositionX = basicEnemy.x;
-            let enemyPositionY = basicEnemy.y;
-    
-            const dx = target.x - enemyPositionX;
-            const dy = target.y - enemyPositionY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const speed = 0.3; // Adjust speed for smoother movement
-    
-            if (distance < speed) {
-                // Snap to the target position if close enough
-                basicEnemy.setPosition(target.x, target.y);
-                currentPathIndex++; // Move to the next point in the path
-            } else {
-                // Move towards the target position
-                basicEnemy.erase(ctx);
-                enemyPositionX += (dx / distance) * speed;
-                enemyPositionY += (dy / distance) * speed;
-                basicEnemy.setPosition(enemyPositionX, enemyPositionY);
-                basicEnemy.render(ctx);
-            }
-    
-            // Check if the enemy can attack towers
-            towerArray.forEach(tower => {
-                const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
-                if (distanceToTower <= tower.range) {
-                    console.log(`Enemy in range of tower ${tower}`); // Assuming tower has a toString method
-                    const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
-                    bullets.push(bullet); // Store bullet in the bullets array
+    function moveEnemies() {
+        enemies.forEach((enemy, enemyIndex) => {
+            if (ctx && currentPathIndex[enemyIndex] < enemyPath.length) {
+                const target = enemyPath[currentPathIndex[enemyIndex]];
+                let enemyPositionX = enemy.x;
+                let enemyPositionY = enemy.y;
+
+                const dx = target.x - enemyPositionX;
+                const dy = target.y - enemyPositionY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const speed = enemy.speed;
+
+                if (distance < speed) {
+                    // Snap to the target position if close enough
+                    enemy.setPosition(target.x, target.y);
+                    currentPathIndex[enemyIndex]++; // Move to the next point in the path for this enemy
+                } else {
+                    // Move towards the target position
+                    enemy.erase(ctx);
+                    enemyPositionX += (dx / distance) * speed;
+                    enemyPositionY += (dy / distance) * speed;
+                    enemy.setPosition(enemyPositionX, enemyPositionY);
+                    enemy.render(ctx);
                 }
-            });
-        }
+
+                // Check if the enemy can attack towers
+                towerArray.forEach(tower => {
+                    const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
+                    if (distanceToTower <= tower.range) {
+                        console.log(`Enemy in range of tower ${tower}`); // Assuming tower has a toString method
+                        const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                        bullets.push(bullet); // Store bullet in the bullets array
+                    }
+                });
+            }
+        });
     }
 
     // Start the game loop
-    renderMapAndEnemy();
+    renderMap();
     requestAnimationFrame(gameLoop); // Start the animation
 });

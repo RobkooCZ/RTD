@@ -1,5 +1,5 @@
 class BasicEnemy {
-    private speed: number;
+    speed: number;
     x: number;
     y: number;
     private size: number; // Size of the enemy
