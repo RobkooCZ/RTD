@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     enemyPositionX += (dx / distance) * speed;
                     enemyPositionY += (dy / distance) * speed;
                     enemy.setPosition(enemyPositionX, enemyPositionY);
-                    enemy.render(ctx);
+                    enemy.render(ctx, enemy.health);
                 }
     
                 // Check if the enemy can attack towers

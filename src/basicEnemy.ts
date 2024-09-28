@@ -21,9 +21,22 @@ class BasicEnemy {
         }
     }
 
-    // Method to render the enemy on the canvas
-    public render(ctx: CanvasRenderingContext2D): void {
-        ctx.fillStyle = 'white'; // Set the color of the enemy
+    // Method to render the enemy on the canvas"
+    public render(ctx: CanvasRenderingContext2D, health: number): void {
+        if (health > 85 && health <= 100) {
+            ctx.fillStyle = 'white'; // Very healthy: white color
+        } else if (health > 65 && health <= 85) {
+            ctx.fillStyle = 'lightgreen'; // Healthy: light green color
+        } else if (health > 45 && health <= 65) {
+            ctx.fillStyle = 'yellow'; // Moderately healthy: yellow color
+        } else if (health > 32 && health <= 45) {
+            ctx.fillStyle = 'orange'; // Wounded: orange color
+        } else if (health > 16 && health <= 32) {
+            ctx.fillStyle = 'pink'; // Seriously wounded: pink color
+        } else if (health > 0 && health <= 16) {
+            ctx.fillStyle = 'red'; // Critical condition: red color
+        }
+
         ctx.beginPath();
         
         // Center the enemy in the grid cell
