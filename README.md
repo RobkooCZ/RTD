@@ -1,12 +1,11 @@
-# Project Name
-Robkoo's Tower Defense
+# Robkoo's Tower Defense
 
 ## Description
 A website game made using Typescript. Made mainly to practice my programming skills and to have fun while coding a simple TD game.
 
 # Changelog (last 3 updates)
 
-## For the full detailed list of changes and updates, please see the [CHANGELOG.md](CHANGELOG.md).
+## For the full detailed list of changes and updates, please see the [Changelog](CHANGELOG.md).
 
 ## Alpha 0.1.4
 - Added health stages
