@@ -1,19 +1,24 @@
 class BasicEnemy {
-    speed: number;
     x: number;
     y: number;
-    private size: number; // Size of the enemy
+    speed: number;
+    public health: number;
+    private size: number = 25; // Size of the enemy
 
-    constructor(speed: number, x: number, y: number) {
+    constructor(speed: number, x: number, y: number, health: number) {
         this.speed = speed;
         this.x = x;
         this.y = y;
-        this.size = 25; // Define the size of the enemy
+        this.health = health; // Initialize health
     }
 
-    public setPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
+    // Method to apply damage to the enemy
+    takeDamage(amount: number) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0; // Prevent negative health
+            // Additional logic for enemy death can go here
+        }
     }
 
     // Method to render the enemy on the canvas
@@ -36,5 +41,10 @@ class BasicEnemy {
         const centeredY = this.y + (50 - this.size) / 2; // Centered Y
         
         ctx.fillRect(centeredX, centeredY, this.size, this.size); // Draw over to "erase"
+    }
+
+    public setPosition(x: number, y: number) {
+        this.x = x;
+        this.y = y;
     }
 }

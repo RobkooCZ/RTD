@@ -7,12 +7,10 @@ class BasicBullet {
     targetY; // Target position (center of the enemy)
     constructor(damage, towerX, towerY, enemyX, enemyY) {
         this.damage = damage;
-        // Center the bullet at the tower's position
-        this.x = towerX + (50 - 10) / 2;
+        this.x = towerX + (50 - 10) / 2; // Center the bullet in the tower
         this.y = towerY + (50 - 10) / 2;
-        // Center the target at the enemy's position 
-        this.targetX = enemyX + (50 - 10) / 2;
-        this.targetY = enemyY + (50 - 10) / 2;
+        this.targetX = enemyX + (25 - 10) / 2; // Center the bullet in the enemy
+        this.targetY = enemyY + (25 - 10) / 2;
     }
     setPosition(x, y) {
         this.x = x;
@@ -25,14 +23,14 @@ class BasicBullet {
         ctx.rect(this.x, this.y, 10, 10); // Bullet size
         ctx.fill();
     }
-    move(ctx) {
+    move(enemies, ctx) {
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
         if (magnitude === 0) {
             return; // Already at target position, exit the function
         }
-        const speed = 5;
+        const speed = 2;
         // Calculate normalized direction vector
         const directionX = dx / magnitude;
         const directionY = dy / magnitude;
@@ -45,24 +43,40 @@ class BasicBullet {
             this.x = this.targetX;
             this.y = this.targetY;
         }
-        // Render bullet
+        // Check for collision with enemies
+        enemies.forEach((enemy, index) => {
+            const enemyCenterX = enemy.x + 12.5; // Center of the enemy
+            const enemyCenterY = enemy.y + 12.5; // Center of the enemy
+            if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
+                this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
+                // Collision detected
+                enemy.takeDamage(this.damage); // Apply damage to the enemy
+                // Remove bullet after hitting the enemy
+                this.x = -10; // Move bullet off screen or similar (could also remove from array)
+            }
+        });
         this.render(ctx);
     }
 }
 class BasicEnemy {
-    speed;
     x;
     y;
-    size; // Size of the enemy
-    constructor(speed, x, y) {
+    speed;
+    health;
+    size = 25; // Size of the enemy
+    constructor(speed, x, y, health) {
         this.speed = speed;
         this.x = x;
         this.y = y;
-        this.size = 25; // Define the size of the enemy
+        this.health = health; // Initialize health
     }
-    setPosition(x, y) {
-        this.x = x;
-        this.y = y;
+    // Method to apply damage to the enemy
+    takeDamage(amount) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0; // Prevent negative health
+            // Additional logic for enemy death can go here
+        }
     }
     // Method to render the enemy on the canvas
     render(ctx) {
@@ -81,11 +95,16 @@ class BasicEnemy {
         const centeredY = this.y + (50 - this.size) / 2; // Centered Y
         ctx.fillRect(centeredX, centeredY, this.size, this.size); // Draw over to "erase"
     }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 class BasicTower {
     range;
     damage;
     fireRate;
+    lastFired = 0;
     x;
     y;
     constructor(range, damage, fireRate, x, y) {
@@ -115,6 +134,9 @@ class BasicTower {
 /// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
+const staticInfo = document.createElement('div');
+staticInfo.className = 'staticInfo';
+document.body.appendChild(staticInfo);
 document.addEventListener('DOMContentLoaded', () => {
     const map = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -152,6 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let bullets = []; // Array to store bullets
     let enemies = []; // Array to store enemies
     let currentPathIndex = []; // Array to track path indices for multiple enemies
+    let damage = 10;
+    let fireRate = 2;
+    let health = 100;
+    staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}`;
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
     // Mouse movement for cursor position
@@ -175,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (map[gridY][gridX] === 0) { // Valid placement check (0 means free)
                     // Check if a tower already exists at this grid position
                     if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
-                        const tower = new BasicTower(125, 10, 1, snappedX, snappedY);
+                        const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY);
                         towerArray.push(tower); // Add the tower to the array
                         if (ctx) {
                             tower.render(ctx); // Render the tower
@@ -222,12 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
-        const newEnemy = new BasicEnemy(0.3, 350, 450); // Assuming BasicEnemy constructor takes speed and x, y coordinates
+        const newEnemy = new BasicEnemy(0.3, 350, 500, health);
         enemies.push(newEnemy);
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
     }
     // Start rendering and movement
-    function gameLoop() {
+    function gameLoop(timestamp) {
         if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
             renderMap(); // Render the map
@@ -237,10 +263,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             // Move and render bullets
             bullets.forEach((bullet, index) => {
-                bullet.move(ctx); // Move the bullet
-                // Remove bullet if it reached the target
-                if (bullet.x === bullet.targetX && bullet.y === bullet.targetY) {
-                    bullets.splice(index, 1); // Remove bullet from the array
+                bullet.move(enemies, ctx); // Move the bullet and check for collisions with enemies
+                // Check if the bullet is off-screen or has hit a target
+                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(index, 1); // Remove bullet if it goes off-screen
                 }
             });
             // Move all enemies
@@ -277,11 +303,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 towerArray.forEach(tower => {
                     const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
                     if (distanceToTower <= tower.range) {
-                        console.log(`Enemy in range of tower ${tower}`); // Assuming tower has a toString method
-                        const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
-                        bullets.push(bullet); // Store bullet in the bullets array
+                        const currentTime = performance.now(); // Get the current time in milliseconds
+                        // Check if enough time has passed since the last shot
+                        if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
+                            const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                            bullets.push(bullet); // Store bullet in the bullets array
+                            tower.lastFired = currentTime; // Update the last fired time
+                        }
                     }
                 });
+            }
+            // Remove enemy if health is zero or below
+            if (enemy.health <= 0) {
+                enemies.splice(enemyIndex, 1); // Remove enemy from the array
+                currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
             }
         });
     }

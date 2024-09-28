@@ -2,6 +2,7 @@ class BasicTower {
     range: number;
     damage: number;
     fireRate: number;
+    lastFired: number = 0;
     x: number;
     y: number;
 

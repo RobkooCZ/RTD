@@ -1,5 +1,5 @@
 class BasicBullet {
-    private damage: number;
+    damage: number;
     x: number; // Current position of the bullet
     y: number; // Current position of the bullet
     targetX: number; // Target position (center of the enemy)
@@ -7,14 +7,10 @@ class BasicBullet {
 
     constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number) {
         this.damage = damage;
-
-        // Center the bullet at the tower's position
-        this.x = towerX + (50 - 10) / 2;
-        this.y = towerY + (50 - 10) / 2;
-
-        // Center the target at the enemy's position 
-        this.targetX = enemyX + (50 - 10) / 2;
-        this.targetY = enemyY + (50 - 10) / 2;
+        this.x = towerX + (50 - 10) / 2; // Center the bullet in the tower
+        this.y = towerY + (50 - 10) / 2; 
+        this.targetX = enemyX + (25 - 10) / 2; // Center the bullet in the enemy
+        this.targetY = enemyY + (25 - 10) / 2;
     }
 
     public setPosition(x: number, y: number): void {
@@ -30,7 +26,7 @@ class BasicBullet {
         ctx.fill();
     }
 
-    public move(ctx: CanvasRenderingContext2D): void {
+    public move(enemies: BasicEnemy[], ctx: CanvasRenderingContext2D): void {
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
@@ -39,7 +35,7 @@ class BasicBullet {
             return; // Already at target position, exit the function
         }
 
-        const speed = 5;
+        const speed = 2;
         
         // Calculate normalized direction vector
         const directionX = dx / magnitude;
@@ -56,7 +52,19 @@ class BasicBullet {
             this.y = this.targetY;
         }
 
-        // Render bullet
+        // Check for collision with enemies
+        enemies.forEach((enemy, index) => {
+            const enemyCenterX = enemy.x + 12.5; // Center of the enemy
+            const enemyCenterY = enemy.y + 12.5; // Center of the enemy
+            if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
+                this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
+                // Collision detected
+                enemy.takeDamage(this.damage); // Apply damage to the enemy
+                // Remove bullet after hitting the enemy
+                this.x = -10; // Move bullet off screen or similar (could also remove from array)
+            }
+        });
+
         this.render(ctx);
     }
 }
