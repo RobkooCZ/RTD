@@ -150,9 +150,20 @@ class BasicTower {
         ctx.stroke();
     }
 }
+class gameMap {
+    map; // 2D array to store the map
+    enemyPath; // Array to store the path the enemies will take
+    name;
+    constructor(map, enemyPath, name) {
+        this.map = map;
+        this.enemyPath = enemyPath;
+        this.name = name;
+    }
+}
 /// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
+/// <reference path="maps/gameMap.ts" />
 const staticInfo = document.createElement('div');
 staticInfo.className = 'staticInfo';
 const gameStats = document.createElement('h2');
@@ -160,7 +171,7 @@ gameStats.className = 'gameStats';
 document.body.appendChild(staticInfo);
 document.body.appendChild(gameStats);
 document.addEventListener('DOMContentLoaded', () => {
-    const map = [
+    const basicMap = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -172,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
     ];
-    const enemyPath = [
+    const basicMapPath = [
         { x: 350, y: 450 },
         { x: 350, y: 400 },
         { x: 350, y: 350 },
@@ -189,6 +200,44 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 100, y: 50 },
         { x: 100, y: 0 },
     ];
+    const easyMap = [
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    ];
+    const easyMapPath = [
+        { x: 350, y: 450 },
+        { x: 350, y: 400 },
+        { x: 350, y: 350 },
+        { x: 350, y: 300 },
+        { x: 350, y: 250 },
+        { x: 350, y: 200 },
+        { x: 300, y: 200 },
+        { x: 250, y: 200 },
+        { x: 200, y: 200 },
+        { x: 150, y: 200 },
+        { x: 100, y: 200 },
+        { x: 100, y: 250 },
+        { x: 100, y: 300 },
+        { x: 100, y: 350 },
+        { x: 150, y: 350 },
+        { x: 200, y: 350 },
+        { x: 250, y: 350 },
+        { x: 250, y: 300 },
+        { x: 250, y: 250 },
+        { x: 250, y: 200 },
+        { x: 250, y: 150 },
+        { x: 250, y: 100 },
+        { x: 250, y: 50 },
+        { x: 250, y: 0 },
+    ];
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
     const rectSize = 50; // Size of each grid cell
@@ -203,6 +252,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameCash = 1000;
     let towerCost = 100;
     let gameLost = false;
+    let currentMapIndex = 0; // Index to track selected map
+    let maps = []; // Array to store multiple maps
+    let currentMap = []; // Currently selected map grid
+    let currentMapPath = []; // Currently selected map path
+    let selectedMap = localStorage.getItem('selectedMap'); // Get the selected map from the main menu
+    // Add maps to the array
+    maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
+    maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
+    if (selectedMap === 'basicMap') {
+        currentMapIndex = 0;
+    }
+    else if (selectedMap === 'easyMap') {
+        currentMapIndex = 1;
+    }
+    currentMap = maps[currentMapIndex].map;
+    currentMapPath = maps[currentMapIndex].enemyPath;
     gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Display health and cash
     staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
     let cursorX = 0; // Initialize cursorX
@@ -218,15 +283,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // toggle to spawn a tower
     document.addEventListener('keydown', (event) => {
-        if (event.key === 't') {
+        if (event.key === 't' || event.key === 'T') {
             const snappedX = snapToGrid(cursorX);
             const snappedY = snapToGrid(cursorY);
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
             if (gameCash >= towerCost) {
                 // Check if the position is valid for tower placement
-                if (gridY >= 0 && gridY < map.length && gridX >= 0 && gridX < map[0].length) {
-                    if (map[gridY][gridX] === 0) { // Valid placement check (0 means free)
+                if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
+                    if (currentMap[gridY][gridX] === 0) { // Valid placement check (0 means free)
                         // Check if a tower already exists at this grid position
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
@@ -253,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // toggle to reset the game
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'r') {
+        if (event.key === 'r' || event.key === 'R') {
             towerArray = []; // Reset the tower array
             bullets = []; // Reset the bullets array
             enemies = []; // Reset the enemies array
@@ -266,16 +331,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // toggle to let the enemy move
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'e') {
+        if (event.key === 'e' || event.key === 'E') {
             spawnEnemy(); // Spawn a new enemy
         }
     });
     // Initial rendering of the map
     function renderMap() {
         if (ctx) {
-            for (let i = 0; i < map.length; i++) {
-                for (let j = 0; j < map[i].length; j++) {
-                    ctx.fillStyle = map[i][j] === 1 ? 'brown' : 'green';
+            for (let i = 0; i < currentMap.length; i++) {
+                for (let j = 0; j < currentMap[i].length; j++) {
+                    ctx.fillStyle = currentMap[i][j] === 1 ? 'brown' : 'green';
                     ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
                 }
             }
@@ -313,8 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function moveEnemies() {
         enemies.forEach((enemy, enemyIndex) => {
-            if (ctx && currentPathIndex[enemyIndex] < enemyPath.length) {
-                const target = enemyPath[currentPathIndex[enemyIndex]];
+            if (ctx && currentPathIndex[enemyIndex] < currentMapPath.length) {
+                const target = currentMapPath[currentPathIndex[enemyIndex]];
                 let enemyPositionX = enemy.x;
                 let enemyPositionY = enemy.y;
                 const dx = target.x - enemyPositionX;

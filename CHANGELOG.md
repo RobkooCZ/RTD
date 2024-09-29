@@ -1,5 +1,12 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.1.7
+- Added a second map, "Easy Map"
+- Made a very simple main menu where you can choose the map you want to play
+
+### Bugfixes
+- Fixed a bug where the keybinds wouldn't work with Capital letters
+
 ## Alpha 0.1.6
 - Added cash to the game
 - Starting cash: $1000
