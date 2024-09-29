@@ -1,8 +1,18 @@
 .staticInfo {
     position: absolute;
-    top: 42%;
-    left: 90%;
-    width: 100%;
+    top: 32%;
+    left: 55%;
+    width: 30%;
+    transform: translate(-50%, -50%);
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 3vh;
+}
+
+.gameHealth{
+    position: absolute;
+    top: 55%;
+    left: 55%;
+    width: 30%;
     transform: translate(-50%, -50%);
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: 5vh;

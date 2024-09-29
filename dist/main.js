@@ -153,7 +153,10 @@ class BasicTower {
 /// <reference path="basicBullet.ts" />
 const staticInfo = document.createElement('div');
 staticInfo.className = 'staticInfo';
+const gameHealth = document.createElement('h2');
+gameHealth.className = 'gameHealth';
 document.body.appendChild(staticInfo);
+document.body.appendChild(gameHealth);
 document.addEventListener('DOMContentLoaded', () => {
     const map = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -194,6 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let damage = 10;
     let fireRate = 2;
     let health = 100;
+    let GameHealth = 100;
+    gameHealth.innerHTML = `Health: ${GameHealth}`;
     staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
@@ -244,6 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
             bullets = []; // Reset the bullets array
             enemies = []; // Reset the enemies array
             currentPathIndex = []; // Reset the path index for enemies
+            GameHealth = 100; // Reset the game health
+            gameHealth.innerHTML = `Health: ${GameHealth}`; // Update the health display
         }
     });
     // toggle to let the enemy move
@@ -329,6 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 });
+            }
+            // If the enemy has reached the end of the path
+            else if (ctx) {
+                GameHealth -= 1; // Reduce health by 1
+                gameHealth.innerHTML = `Health: ${GameHealth}`; // Update the health display
+                enemies.splice(enemyIndex, 1); // Remove enemy from the array
+                currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
             }
             // Remove enemy if health is zero or below
             if (enemy.health <= 0) {

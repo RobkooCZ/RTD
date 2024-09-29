@@ -1,5 +1,9 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.1.5
+- Added a simple health display
+- You lose 1 HP everytime an enemy reaches the end of the path
+
 ## Alpha 0.1.4
 - Added health stages
 
