@@ -14,34 +14,109 @@ document.body.appendChild(gameStats);
 
 document.addEventListener('DOMContentLoaded', () => {
     const basicMap: number[][] = [
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
     ];
+    
 
     const basicMapPath: { x: number; y: number }[] = [
-        { x: 350, y: 450 },
-        { x: 350, y: 400 },
-        { x: 350, y: 350 },
+        { x: 50, y: 300 }, //first straight 
+        { x: 100, y: 300 },
+        { x: 150, y: 300 },
+        { x: 200, y: 300 },
+        { x: 250, y: 300 },
+        { x: 300, y: 300 },
         { x: 350, y: 300 },
-        { x: 350, y: 250 },
-        { x: 350, y: 200 },
-        { x: 300, y: 200 },
-        { x: 250, y: 200 },
+        { x: 400, y: 300 },
+        { x: 450, y: 300 },
+        { x: 450, y: 250 }, //straight up
+        { x: 450, y: 200 },
+        { x: 450, y: 150 },
+        { x: 450, y: 100 },
+        { x: 450, y: 50 }, 
+        { x: 400, y: 50 }, // straight left
+        { x: 350, y: 50 },
+        { x: 300, y: 50 },
+        { x: 250, y: 50 },
+        { x: 200, y: 50 },
+        { x: 200, y: 100 }, // straight down
+        { x: 200, y: 150 },
         { x: 200, y: 200 },
-        { x: 150, y: 200 },
-        { x: 100, y: 200 },
-        { x: 100, y: 150 },
-        { x: 100, y: 100 },
-        { x: 100, y: 50 },
-        { x: 100, y: 0 },
+        { x: 200, y: 250 },
+        { x: 200, y: 300 },
+        { x: 200, y: 350 },
+        { x: 200, y: 400 },
+        { x: 200, y: 450 },
+        { x: 200, y: 500 },
+        { x: 200, y: 550 },
+        { x: 200, y: 600 },
+        { x: 200, y: 650 },
+        { x: 200, y: 700 },
+        { x: 200, y: 750 },
+        { x: 150, y: 750 }, // straight left
+        { x: 100, y: 750 },
+        { x: 50, y: 750 },
+        { x: 50, y: 700 }, // straight up
+        { x: 50, y: 650 },
+        { x: 50, y: 600 },
+        { x: 50, y: 550 },
+        { x: 100, y: 550 }, // straight right
+        { x: 150, y: 550 },
+        { x: 200, y: 550 },
+        { x: 250, y: 550 },
+        { x: 300, y: 550 },
+        { x: 350, y: 550 },
+        { x: 400, y: 550 },
+        { x: 450, y: 550 },
+        { x: 500, y: 550 },
+        { x: 550, y: 550 },
+        { x: 600, y: 550 },
+        { x: 650, y: 550 },
+        { x: 700, y: 550 },
+        { x: 750, y: 550 },
+        { x: 800, y: 550 },
+        { x: 850, y: 550 },
+        { x: 900, y: 550 },
+        { x: 950, y: 550 },
+        { x: 950, y: 500 }, // straight up
+        { x: 950, y: 450 },
+        { x: 950, y: 400 },
+        { x: 950, y: 350 },
+        { x: 950, y: 300 },
+        { x: 950, y: 250 },
+        { x: 1000, y: 250 }, // straight right
+        { x: 1050, y: 250 },
+        { x: 1100, y: 250 },
+        { x: 1150, y: 250 },
+        { x: 1150, y: 300 }, // straight down
+        { x: 1150, y: 350 },
+        { x: 1150, y: 400 },
+        { x: 1150, y: 450 },
+        { x: 1150, y: 500 },
+        { x: 1150, y: 550 },
+        { x: 1150, y: 600 },
+        { x: 1150, y: 650 },
+        { x: 1150, y: 700 },
+        { x: 1150, y: 750 },
+        { x: 1150, y: 800 },
+        { x: 1150, y: 850 },
+
     ];
 
     const easyMap: number[][] = [
@@ -119,15 +194,15 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMapPath = maps[currentMapIndex].enemyPath;
 
     gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Display health and cash
-    staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
+    // staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
 
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
 
     // Mouse movement for cursor position
     document.addEventListener('mousemove', (event) => {
-        cursorX = event.clientX - 32; // Adjust cursor position
-        cursorY = event.clientY - 100; // Adjust cursor position
+        cursorX = event.clientX - 24; // Adjust cursor position
+        cursorY = event.clientY - 25; // Adjust cursor position
     });
 
     // Function to snap coordinates to the nearest grid point
@@ -207,8 +282,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
-        const newEnemy = new BasicEnemy(0.3, 350, 500, health);
-        enemies.push(newEnemy);
+        if (selectedMap === 'basicMap') {
+            const newEnemy = new BasicEnemy(0.3, 0, 300, health);
+            enemies.push(newEnemy);
+        }
+        else if (selectedMap === 'easyMap') {
+            const newEnemy = new BasicEnemy(0.3, 350, 500, health);
+            enemies.push(newEnemy);
+        }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
     }
 

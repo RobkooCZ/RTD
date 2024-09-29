@@ -1,5 +1,14 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2
+- GAME PROPERLY WORKS ONLY IN FULLSCREEN ON 1920X1080
+- Made the game into a fullscreen game
+- Very WIP UI
+- Made the "Basic Map" into a big map
+
+### Bugfixes
+- Fixed a bug where the tower wouldn't be placed where your cursor was
+
 ## Alpha 0.1.7
 - Added a second map, "Easy Map"
 - Made a very simple main menu where you can choose the map you want to play
