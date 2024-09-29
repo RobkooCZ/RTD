@@ -5,13 +5,15 @@ class BasicTower {
     lastFired: number = 0;
     x: number;
     y: number;
+    cost: number;
 
-    constructor(range: number, damage: number, fireRate: number, x: number, y: number) {
+    constructor(range: number, damage: number, fireRate: number, x: number, y: number, cost: number) {
         this.range = range;
         this.damage = damage;
         this.fireRate = fireRate;
         this.x = x;
         this.y = y;
+        this.cost = cost;
     }
 
     public setPosition(x: number, y: number): void {

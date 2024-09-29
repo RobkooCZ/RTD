@@ -1,5 +1,12 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.1.6
+- Added cash to the game
+- Starting cash: $1000
+- Tower cost: $100
+- You earn $10 per enemy kill
+- The towers stop shooting if you lose the game
+
 ## Alpha 0.1.5
 - Added a simple health display
 - You lose 1 HP everytime an enemy reaches the end of the path

@@ -124,12 +124,14 @@ class BasicTower {
     lastFired = 0;
     x;
     y;
-    constructor(range, damage, fireRate, x, y) {
+    cost;
+    constructor(range, damage, fireRate, x, y, cost) {
         this.range = range;
         this.damage = damage;
         this.fireRate = fireRate;
         this.x = x;
         this.y = y;
+        this.cost = cost;
     }
     setPosition(x, y) {
         this.x = x;
@@ -153,10 +155,10 @@ class BasicTower {
 /// <reference path="basicBullet.ts" />
 const staticInfo = document.createElement('div');
 staticInfo.className = 'staticInfo';
-const gameHealth = document.createElement('h2');
-gameHealth.className = 'gameHealth';
+const gameStats = document.createElement('h2');
+gameStats.className = 'gameStats';
 document.body.appendChild(staticInfo);
-document.body.appendChild(gameHealth);
+document.body.appendChild(gameStats);
 document.addEventListener('DOMContentLoaded', () => {
     const map = [
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -198,7 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let fireRate = 2;
     let health = 100;
     let GameHealth = 100;
-    gameHealth.innerHTML = `Health: ${GameHealth}`;
+    let gameCash = 1000;
+    let towerCost = 100;
+    let gameLost = false;
+    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Display health and cash
     staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
@@ -218,27 +223,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const snappedY = snapToGrid(cursorY);
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
-            // Check if the position is valid for tower placement
-            if (gridY >= 0 && gridY < map.length && gridX >= 0 && gridX < map[0].length) {
-                if (map[gridY][gridX] === 0) { // Valid placement check (0 means free)
-                    // Check if a tower already exists at this grid position
-                    if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
-                        const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY);
-                        towerArray.push(tower); // Add the tower to the array
-                        if (ctx) {
-                            tower.render(ctx); // Render the tower
+            if (gameCash >= towerCost) {
+                // Check if the position is valid for tower placement
+                if (gridY >= 0 && gridY < map.length && gridX >= 0 && gridX < map[0].length) {
+                    if (map[gridY][gridX] === 0) { // Valid placement check (0 means free)
+                        // Check if a tower already exists at this grid position
+                        if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
+                            gameCash -= towerCost; // Deduct the tower cost from the cash
+                            gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
+                            const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost);
+                            towerArray.push(tower); // Add the tower to the array
+                            if (ctx) {
+                                tower.render(ctx); // Render the tower
+                            }
+                        }
+                        else {
+                            console.log('Tower not placed: A tower already exists at this position.');
                         }
                     }
                     else {
-                        console.log('Tower not placed: A tower already exists at this position.');
+                        console.log('Tower not placed: Invalid position (path)');
                     }
                 }
                 else {
-                    console.log('Tower not placed: Invalid position (path)');
+                    console.log('Tower not placed: Out of map bounds');
                 }
-            }
-            else {
-                console.log('Tower not placed: Out of map bounds');
             }
         }
     });
@@ -250,7 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
             enemies = []; // Reset the enemies array
             currentPathIndex = []; // Reset the path index for enemies
             GameHealth = 100; // Reset the game health
-            gameHealth.innerHTML = `Health: ${GameHealth}`; // Update the health display
+            gameCash = 1000; // Reset the game cash
+            gameLost = false; // Reset the game lost flag
+            gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
         }
     });
     // toggle to let the enemy move
@@ -323,24 +334,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     enemy.setPosition(enemyPositionX, enemyPositionY);
                     enemy.render(ctx, enemy.health);
                 }
-                // Check if the enemy can attack towers
-                towerArray.forEach(tower => {
-                    const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
-                    if (distanceToTower <= tower.range) {
-                        const currentTime = performance.now(); // Get the current time in milliseconds
-                        // Check if enough time has passed since the last shot
-                        if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                            const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
-                            bullets.push(bullet); // Store bullet in the bullets array
-                            tower.lastFired = currentTime; // Update the last fired time
+                if (!gameLost) { // if the game is lost, towers dont attack
+                    // Check if the enemy can attack towers
+                    towerArray.forEach(tower => {
+                        const distanceToTower = Math.sqrt(Math.pow(tower.x - enemyPositionX, 2) + Math.pow(tower.y - enemyPositionY, 2));
+                        if (distanceToTower <= tower.range) {
+                            const currentTime = performance.now(); // Get the current time in milliseconds
+                            // Check if enough time has passed since the last shot
+                            if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                                bullets.push(bullet); // Store bullet in the bullets array
+                                tower.lastFired = currentTime; // Update the last fired time
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
             // If the enemy has reached the end of the path
             else if (ctx) {
-                GameHealth -= 1; // Reduce health by 1
-                gameHealth.innerHTML = `Health: ${GameHealth}`; // Update the health display
+                if (GameHealth > 0) {
+                    GameHealth -= 1; // Deduct health for reaching the end
+                    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
+                }
+                if (GameHealth <= 0) {
+                    gameLost = true;
+                    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}<br>Game Over! Press 'r' to restart`; // Update the health and cash display
+                }
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
             }
@@ -348,6 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (enemy.health <= 0) {
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
+                gameCash += 10; // Add cash for killing an enemy
+                gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
             }
         });
     }
