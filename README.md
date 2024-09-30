@@ -7,20 +7,26 @@ A website game made using Typescript. Made mainly to practice my programming ski
 
 ## For the full detailed list of changes and updates, please see the [Changelog](CHANGELOG.md).
 
+## Alpha 0.2.1
+- Made the site scale based on your resolution
+- Towers, enemies and the grid scales accordingly, this includes tower range and shooting
+- Rewrote the enemy spawning and pathing code to properly spawn and "walk" regardless of the resolution
+
+### Bugfixes
+- Fixed an issue where a tower couldn't be placed due to a rounding error
+
+## Alpha 0.2
+- GAME PROPERLY WORKS ONLY IN FULLSCREEN ON 1920X1080
+- Made the game into a fullscreen game
+- Very WIP UI
+- Made the "Basic Map" into a big map
+
+### Bugfixes
+- Fixed a bug where the tower wouldn't be placed where your cursor was
+
 ## Alpha 0.1.7
 - Added a second map, "Easy Map"
 - Made a very simple main menu where you can choose the map you want to play
 
 ### Bugfixes
 - Fixed a bug where the keybinds wouldn't work with Capital letters
-
-## Alpha 0.1.6
-- Added cash to the game
-- Starting cash: $1000
-- Tower cost: $100
-- You earn $10 per enemy kill
-- The towers stop shooting if you lose the game
-
-## Alpha 0.1.5
-- Added a simple health display
-- You lose 1 HP everytime an enemy reaches the end of the path
