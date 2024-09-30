@@ -1,5 +1,13 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.1
+- Made the site scale based on your resolution
+- Towers, enemies and the grid scales accordingly, this includes tower range and shooting
+- Rewrote the enemy spawning and pathing code to properly spawn and "walk" regardless of the resolution
+
+### Bugfixes
+- Fixed an issue where a tower couldn't be placed due to a rounding error
+
 ## Alpha 0.2
 - GAME PROPERLY WORKS ONLY IN FULLSCREEN ON 1920X1080
 - Made the game into a fullscreen game

@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 1150, y: 750 },
         { x: 1150, y: 800 },
         { x: 1150, y: 850 },
-
     ];
 
     const easyMap: number[][] = [
@@ -132,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
     ];
 
-    const easyMapPath: { x: number; y: number }[] = [
+    const easyMapPath: {
+         x: number; y: number }[] = [
         { x: 350, y: 450 },
         { x: 350, y: 400 },
         { x: 350, y: 350 },
@@ -158,26 +158,60 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 250, y: 50 },
         { x: 250, y: 0 },
     ];
-
+    
     const canvas = document.getElementById('mapCanvas') as HTMLCanvasElement;
+    let rectSize: number = 50; // Size of each grid cell, this is the default
+    let towerSize: number = 50; // Size of each tower, this is the default
+    let enemySize: number = 25; // Size of each enemy, this is the default
+
+    // Function to average a number to prevent bad numbers
+    function averageToNumber(value: number, average: number): number {
+        return Math.round(value / average) * average;
+    }
+
+    // Set initial canvas size and grid cell size
+    canvas.width = averageToNumber((window.innerWidth / 100) * 78.125, 10);
+    canvas.height = averageToNumber((window.innerHeight / 100) * 83.333, 10);
+    rectSize = canvas.width / 30; // Update the size of each grid cell
+    towerSize = rectSize; // Update the size of each tower
+    enemySize = rectSize / 2; // Update the size of each enemy
+
+    window.addEventListener('resize', () => {
+        canvas.width = averageToNumber((window.innerWidth / 100) * 78.125, 10);
+        canvas.height = averageToNumber((window.innerHeight / 100) * 83.333, 10);
+        rectSize = canvas.width / 30; // Update the size of each grid cell
+        towerSize = rectSize; // Update the size of each tower
+        enemySize = rectSize / 2; // Update the size of each enemy
+    });
+
     const ctx = canvas.getContext('2d');
-    const rectSize = 50; // Size of each grid cell
     let towerArray: BasicTower[] = []; // Array to store the towers
     let bullets: BasicBullet[] = []; // Array to store bullets
     let enemies: BasicEnemy[] = []; // Array to store enemies
     let currentPathIndex: number[] = []; // Array to track path indices for multiple enemies
-    let damage = 10;
-    let fireRate = 2;
-    let health = 100;
-    let GameHealth = 100;
-    let gameCash = 1000;
-    let towerCost = 100;
-    let gameLost = false;
+    let damage: number = 10;
+    let fireRate: number = 2;
+    let health: number = 100;
+    let GameHealth: number = 100;
+    let gameCash: number = 1000;
+    let towerCost: number = 100;
+    let gameLost: boolean = false;
     let currentMapIndex = 0; // Index to track selected map
     let maps: gameMap[] = []; // Array to store multiple maps
     let currentMap: number[][] = []; // Currently selected map grid
     let currentMapPath: { x: number; y: number }[] = []; // Currently selected map path
     let selectedMap = localStorage.getItem('selectedMap'); // Get the selected map from the main menu
+    let enemyPaths: { x: number; y: number }[][] = []; // Array to store enemy paths
+
+    enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
+    enemyPaths.push(easyMapPath);
+
+    enemyPaths.forEach(path => { // loops to modify x and y coordinates for enemy paths according to the resolution
+        path.forEach(point => {
+            point.x = point.x/50 * rectSize;
+            point.y = point.y/50 * rectSize;
+        });
+    });
 
     // Add maps to the array
     maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
@@ -218,6 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
 
+            console.log(`Tower trying to be placed at: X: ${gridX}, Y: ${gridY}`);
+
             if (gameCash >= towerCost){
                 // Check if the position is valid for tower placement
                 if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
@@ -226,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
                             gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
-                            const tower: BasicTower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost);
+                            const tower: BasicTower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize);
                             towerArray.push(tower); // Add the tower to the array
                             if (ctx) {
                                 tower.render(ctx); // Render the tower
@@ -283,11 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
         if (selectedMap === 'basicMap') {
-            const newEnemy = new BasicEnemy(0.3, 0, 300, health);
+            const newEnemy = new BasicEnemy(0.5, 0, 300/50 * rectSize, health, enemySize, rectSize);
             enemies.push(newEnemy);
         }
         else if (selectedMap === 'easyMap') {
-            const newEnemy = new BasicEnemy(0.3, 350, 500, health);
+            const newEnemy = new BasicEnemy(0.5, 350/50 * rectSize, 500/50 * rectSize, health, enemySize, rectSize);
             enemies.push(newEnemy);
         }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
@@ -342,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentPathIndex[enemyIndex]++; // Move to the next point in the path for this enemy
                 } else {
                     // Move towards the target position
-                    enemy.erase(ctx);
                     enemyPositionX += (dx / distance) * speed;
                     enemyPositionY += (dy / distance) * speed;
                     enemy.setPosition(enemyPositionX, enemyPositionY);
@@ -358,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }

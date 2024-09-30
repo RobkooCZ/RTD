@@ -1,16 +1,20 @@
 class BasicBullet {
-    damage: number;
-    x: number; // Current position of the bullet
-    y: number; // Current position of the bullet
-    targetX: number; // Target position (center of the enemy)
-    targetY: number; // Target position (center of the enemy)
+    public damage: number;
+    public x: number; // Current position of the bullet
+    public y: number; // Current position of the bullet
+    public targetX: number; // Target position (center of the enemy)
+    public targetY: number; // Target position (center of the enemy)
+    private towerSize: number;
+    private enemySize: number;
 
-    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number) {
+    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number) {
         this.damage = damage;
-        this.x = towerX + (50 - 10) / 2; // Center the bullet in the tower
-        this.y = towerY + (50 - 10) / 2; 
-        this.targetX = enemyX + (25 - 10) / 2; // Center the bullet in the enemy
-        this.targetY = enemyY + (25 - 10) / 2;
+        this.towerSize = towerSize;
+        this.enemySize = enemySize;
+        this.x = towerX + (this.towerSize - 10) / 2; // Center the bullet in the tower
+        this.y = towerY + (this.towerSize - 10) / 2; 
+        this.targetX = enemyX + (this.enemySize - 10) / 2; // Center the bullet in the enemy
+        this.targetY = enemyY + (this.enemySize - 10) / 2;
     }
 
     public setPosition(x: number, y: number): void {
@@ -54,8 +58,8 @@ class BasicBullet {
 
         // Check for collision with enemies
         enemies.forEach((enemy, index) => {
-            const enemyCenterX = enemy.x + 12.5; // Center of the enemy
-            const enemyCenterY = enemy.y + 12.5; // Center of the enemy
+            const enemyCenterX = enemy.x + (this.enemySize - 10) / 2; // Center of the enemy
+            const enemyCenterY = enemy.y + (this.enemySize - 10) / 2; // Center of the enemy
             if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
                 // Collision detected

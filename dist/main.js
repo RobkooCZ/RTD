@@ -5,12 +5,16 @@ class BasicBullet {
     y; // Current position of the bullet
     targetX; // Target position (center of the enemy)
     targetY; // Target position (center of the enemy)
-    constructor(damage, towerX, towerY, enemyX, enemyY) {
+    towerSize;
+    enemySize;
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize) {
         this.damage = damage;
-        this.x = towerX + (50 - 10) / 2; // Center the bullet in the tower
-        this.y = towerY + (50 - 10) / 2;
-        this.targetX = enemyX + (25 - 10) / 2; // Center the bullet in the enemy
-        this.targetY = enemyY + (25 - 10) / 2;
+        this.towerSize = towerSize;
+        this.enemySize = enemySize;
+        this.x = towerX + (this.towerSize - 10) / 2; // Center the bullet in the tower
+        this.y = towerY + (this.towerSize - 10) / 2;
+        this.targetX = enemyX + (this.enemySize - 10) / 2; // Center the bullet in the enemy
+        this.targetY = enemyY + (this.enemySize - 10) / 2;
     }
     setPosition(x, y) {
         this.x = x;
@@ -45,8 +49,8 @@ class BasicBullet {
         }
         // Check for collision with enemies
         enemies.forEach((enemy, index) => {
-            const enemyCenterX = enemy.x + 12.5; // Center of the enemy
-            const enemyCenterY = enemy.y + 12.5; // Center of the enemy
+            const enemyCenterX = enemy.x + (this.enemySize - 10) / 2; // Center of the enemy
+            const enemyCenterY = enemy.y + (this.enemySize - 10) / 2; // Center of the enemy
             if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
                 // Collision detected
@@ -63,12 +67,15 @@ class BasicEnemy {
     y;
     speed;
     health;
-    size = 25; // Size of the enemy
-    constructor(speed, x, y, health) {
+    size; // Size of the enemy
+    gridSize;
+    constructor(speed, x, y, health, size, gridSize) {
         this.speed = speed;
         this.x = x;
         this.y = y;
         this.health = health; // Initialize health
+        this.size = size; // Initialize size
+        this.gridSize = gridSize;
     }
     // Method to apply damage to the enemy
     takeDamage(amount) {
@@ -100,17 +107,10 @@ class BasicEnemy {
         }
         ctx.beginPath();
         // Center the enemy in the grid cell
-        const centeredX = this.x + (50 - this.size) / 2; // Assuming each grid cell is 50x50
-        const centeredY = this.y + (50 - this.size) / 2; // Center it vertically
+        const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
+        const centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
         ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
         ctx.fill();
-    }
-    // Method to erase the enemy (draws over its previous position)
-    erase(ctx) {
-        ctx.fillStyle = 'brown'; // Assuming the background is brown
-        const centeredX = this.x + (50 - this.size) / 2; // Centered X
-        const centeredY = this.y + (50 - this.size) / 2; // Centered Y
-        ctx.fillRect(centeredX, centeredY, this.size, this.size); // Draw over to "erase"
     }
     setPosition(x, y) {
         this.x = x;
@@ -125,13 +125,15 @@ class BasicTower {
     x;
     y;
     cost;
-    constructor(range, damage, fireRate, x, y, cost) {
+    size;
+    constructor(range, damage, fireRate, x, y, cost, size) {
         this.range = range;
         this.damage = damage;
         this.fireRate = fireRate;
         this.x = x;
         this.y = y;
         this.cost = cost;
+        this.size = size;
     }
     setPosition(x, y) {
         this.x = x;
@@ -141,12 +143,12 @@ class BasicTower {
     render(ctx) {
         ctx.fillStyle = 'blue'; // Set the color of the tower
         ctx.beginPath();
-        ctx.rect(this.x, this.y, 50, 50);
+        ctx.rect(this.x, this.y, this.size, this.size); // Draw the tower
         ctx.fill();
         // Draw the range of the tower
         ctx.strokeStyle = 'blue';
         ctx.beginPath();
-        ctx.arc(this.x + 25, this.y + 25, this.range, 0, 2 * Math.PI);
+        ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
         ctx.stroke();
     }
 }
@@ -312,8 +314,27 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 250, y: 0 },
     ];
     const canvas = document.getElementById('mapCanvas');
+    let rectSize = 50; // Size of each grid cell, this is the default
+    let towerSize = 50; // Size of each tower, this is the default
+    let enemySize = 25; // Size of each enemy, this is the default
+    // Function to average a number to prevent bad numbers
+    function averageToNumber(value, average) {
+        return Math.round(value / average) * average;
+    }
+    // Set initial canvas size and grid cell size
+    canvas.width = averageToNumber((window.innerWidth / 100) * 78.125, 10);
+    canvas.height = averageToNumber((window.innerHeight / 100) * 83.333, 10);
+    rectSize = canvas.width / 30; // Update the size of each grid cell
+    towerSize = rectSize; // Update the size of each tower
+    enemySize = rectSize / 2; // Update the size of each enemy
+    window.addEventListener('resize', () => {
+        canvas.width = averageToNumber((window.innerWidth / 100) * 78.125, 10);
+        canvas.height = averageToNumber((window.innerHeight / 100) * 83.333, 10);
+        rectSize = canvas.width / 30; // Update the size of each grid cell
+        towerSize = rectSize; // Update the size of each tower
+        enemySize = rectSize / 2; // Update the size of each enemy
+    });
     const ctx = canvas.getContext('2d');
-    const rectSize = 50; // Size of each grid cell
     let towerArray = []; // Array to store the towers
     let bullets = []; // Array to store bullets
     let enemies = []; // Array to store enemies
@@ -330,6 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMap = []; // Currently selected map grid
     let currentMapPath = []; // Currently selected map path
     let selectedMap = localStorage.getItem('selectedMap'); // Get the selected map from the main menu
+    let enemyPaths = []; // Array to store enemy paths
+    enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
+    enemyPaths.push(easyMapPath);
+    enemyPaths.forEach(path => {
+        path.forEach(point => {
+            point.x = point.x / 50 * rectSize;
+            point.y = point.y / 50 * rectSize;
+        });
+    });
     // Add maps to the array
     maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
     maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
@@ -361,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const snappedY = snapToGrid(cursorY);
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
+            console.log(`Tower trying to be placed at: X: ${gridX}, Y: ${gridY}`);
             if (gameCash >= towerCost) {
                 // Check if the position is valid for tower placement
                 if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
@@ -369,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
                             gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
-                            const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost);
+                            const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize);
                             towerArray.push(tower); // Add the tower to the array
                             if (ctx) {
                                 tower.render(ctx); // Render the tower
@@ -422,11 +453,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
         if (selectedMap === 'basicMap') {
-            const newEnemy = new BasicEnemy(0.3, 0, 300, health);
+            const newEnemy = new BasicEnemy(0.5, 0, 300 / 50 * rectSize, health, enemySize, rectSize);
             enemies.push(newEnemy);
         }
         else if (selectedMap === 'easyMap') {
-            const newEnemy = new BasicEnemy(0.3, 350, 500, health);
+            const newEnemy = new BasicEnemy(0.5, 350 / 50 * rectSize, 500 / 50 * rectSize, health, enemySize, rectSize);
             enemies.push(newEnemy);
         }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
@@ -472,7 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 else {
                     // Move towards the target position
-                    enemy.erase(ctx);
                     enemyPositionX += (dx / distance) * speed;
                     enemyPositionY += (dy / distance) * speed;
                     enemy.setPosition(enemyPositionX, enemyPositionY);
@@ -486,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const currentTime = performance.now(); // Get the current time in milliseconds
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }
