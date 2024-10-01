@@ -1,5 +1,19 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.2
+- Added a basic upgrade system
+- Added buttons to upgrade the towers
+- Upgrades cost money and if you don't have money, it shows "NOT ENOUGH MONEY" on the button for 1.5s
+- Styled the buttons
+- Changed the Cash and Health a little bit
+- The site is very responsive and doesnt change much when changing resolutions (unless you change the aspect ratio from horizontal to vertical or make the resolution very small)
+
+### Balance Changes
+- Made the bullet travel 5x faster (TOWER BUFF)
+
+### Bugfixes
+- no bugs found this update :)
+
 ## Alpha 0.2.1
 - Made the site scale based on your resolution
 - Towers, enemies and the grid scales accordingly, this includes tower range and shooting

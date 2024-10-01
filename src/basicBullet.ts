@@ -6,8 +6,9 @@ class BasicBullet {
     public targetY: number; // Target position (center of the enemy)
     private towerSize: number;
     private enemySize: number;
+    public towerUpgrade: number;
 
-    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number) {
+    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number) {
         this.damage = damage;
         this.towerSize = towerSize;
         this.enemySize = enemySize;
@@ -15,6 +16,7 @@ class BasicBullet {
         this.y = towerY + (this.towerSize - 10) / 2; 
         this.targetX = enemyX + (this.enemySize - 10) / 2; // Center the bullet in the enemy
         this.targetY = enemyY + (this.enemySize - 10) / 2;
+        this.towerUpgrade = towerUpgrade;
     }
 
     public setPosition(x: number, y: number): void {
@@ -24,7 +26,12 @@ class BasicBullet {
 
     // Method to render the bullet on the canvas
     public render(ctx: CanvasRenderingContext2D): void {
-        ctx.fillStyle = 'black'; // Set the color of the bullet
+        if (this.towerUpgrade == 1){
+            ctx.fillStyle = 'red';
+        }
+        else {
+            ctx.fillStyle = 'black';
+        }
         ctx.beginPath();
         ctx.rect(this.x, this.y, 10, 10); // Bullet size
         ctx.fill();
@@ -39,7 +46,7 @@ class BasicBullet {
             return; // Already at target position, exit the function
         }
 
-        const speed = 2;
+        const speed = 10;
         
         // Calculate normalized direction vector
         const directionX = dx / magnitude;

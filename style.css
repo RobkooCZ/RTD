@@ -1,27 +1,9 @@
-.staticInfo {
-    position: absolute;
-    top: 32%;
-    left: 55%;
-    width: 30%;
-    transform: translate(-50%, -50%);
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    font-size: 3vh;
-}
-
-.gameStats{
-    position: absolute;
-    color: white;
-    top: 5%;
-    right: 5%;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    font-size: 5vh;
-}
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
+
 body, html {
     width: 100%;
     height: 100%;

@@ -3,13 +3,51 @@
 /// <reference path="basicBullet.ts" />
 /// <reference path="maps/gameMap.ts" />
 
-const staticInfo = document.createElement('div');
-staticInfo.className = 'staticInfo';
+// Create the master container for game stats
+const gameStats = document.createElement('div');
 
-const gameStats = document.createElement('h2');
-gameStats.className = 'gameStats';
+// Style the container
+gameStats.style.position = 'absolute';
+gameStats.style.color = 'white';
+gameStats.style.top = '3.5%';
+gameStats.style.right = '3.5%';
+gameStats.style.fontFamily = "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif";
+gameStats.style.fontSize = '5vh';  // Consistent font size
+gameStats.style.maxWidth = '15%';
+gameStats.style.whiteSpace = 'nowrap';  // Prevent text wrapping
+gameStats.style.textAlign = 'center';  // Center the text
+gameStats.style.display = 'flex';
+gameStats.style.flexDirection = 'column';  // Stack the H2s vertically
 
-document.body.appendChild(staticInfo);
+// Create the first H2 element with a red outline around each letter
+const h2Red = document.createElement('h2');
+h2Red.innerText = 'Red Bordered Text';
+h2Red.style.color = 'white';  // Maintain white text color
+h2Red.style.fontSize = 'inherit';  // Keep the same font size as the container
+h2Red.style.fontFamily = 'inherit';  // Keep the same font family
+h2Red.style.textAlign = 'inherit';  // Keep the same text alignment
+h2Red.style.letterSpacing = '0.1vw';  // Adjust spacing between letters if needed
+
+// Add red outline to each letter
+h2Red.style.webkitTextStroke = '0.2px red';  // Outline each individual letter in red
+h2Red.style.webkitTextFillColor = 'white';  // Ensure the text inside the outline stays white
+
+// Create the second H2 element with a green border around the text (whole H2)
+const h2Green = document.createElement('h2');
+h2Green.innerText = 'Green Bordered Text';
+h2Green.style.color = 'white';  // Maintain white text color
+h2Green.style.fontSize = 'inherit';  // Keep the same font size as the container
+h2Green.style.fontFamily = 'inherit';  // Keep the same font family
+h2Green.style.textAlign = 'inherit';  // Keep the same text alignment
+
+h2Green.style.webkitTextStroke = '0.2px green';  // Outline each individual letter in red
+h2Green.style.webkitTextFillColor = 'white';  // Ensure the text inside the outline stays white
+
+// Append the two H2 elements to the gameStats container
+gameStats.appendChild(h2Red);
+gameStats.appendChild(h2Green);
+
+// Append the gameStats container to the document body
 document.body.appendChild(gameStats);
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -202,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMapPath: { x: number; y: number }[] = []; // Currently selected map path
     let selectedMap = localStorage.getItem('selectedMap'); // Get the selected map from the main menu
     let enemyPaths: { x: number; y: number }[][] = []; // Array to store enemy paths
+    let towerSelected: boolean = false;
 
     enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
     enemyPaths.push(easyMapPath);
@@ -227,8 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMap = maps[currentMapIndex].map;
     currentMapPath = maps[currentMapIndex].enemyPath;
 
-    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Display health and cash
-    // staticInfo.innerHTML = `Tower Damage: ${damage}<br>Fire Rate: ${fireRate}/s<br>Enemy Health: ${health}<br><br><u>Health Color Coding </u><br>White: 85 - 100 (Full Health)<br>Light Green: 65 - 85 (Healthy)<br>Yellow: 45 - 65 (Moderately Healthy)<br>Orange: 32 - 45 (Wounded)<br>Pink: 16 - 32 (Seriously Wounded)<br>Red: 0 - 16 (Critical Condition)`;
+    h2Red.innerText = `Health: ${health}`;
+    h2Green.innerText = `Cash: $${gameCash}`;
 
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
@@ -261,8 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if a tower already exists at this grid position
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
-                            gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
-                            const tower: BasicTower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize);
+                            h2Red.innerText = `Health: ${health}`;
+                            h2Green.innerText = `Cash: $${gameCash}`;
+                            const tower: BasicTower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize, false);
                             towerArray.push(tower); // Add the tower to the array
                             if (ctx) {
                                 tower.render(ctx); // Render the tower
@@ -293,7 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
             GameHealth = 100; // Reset the game health
             gameCash = 1000; // Reset the game cash
             gameLost = false; // Reset the game lost flag
-            gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
+            h2Red.innerText = `Health: ${health}`;
+            h2Green.innerText = `Cash: $${gameCash}`;
         }
     });
 
@@ -303,6 +344,144 @@ document.addEventListener('DOMContentLoaded', () => {
             spawnEnemy(); // Spawn a new enemy
         }
     });
+
+    const upgradeContainer = document.createElement('div');
+
+    // Position the container at the bottom 16.666% of the viewport
+    upgradeContainer.style.position = 'absolute';
+    upgradeContainer.style.bottom = '5%'; 
+    upgradeContainer.style.left = '50%';
+    upgradeContainer.style.transform = 'translateX(-50%)';  // Center horizontally
+    upgradeContainer.style.display = 'flex';  // Flexbox for side-by-side buttons
+    upgradeContainer.style.gap = '2vw';  // Add gap between the buttons
+    upgradeContainer.style.alignItems = 'center';  // Center buttons vertically within this area
+    upgradeContainer.style.height = '10%';  // Container height to vertically center the buttons
+    upgradeContainer.style.justifyContent = 'center';
+    
+    // Create the first button
+    const upgradeButtonPath1 = document.createElement('button');
+    upgradeButtonPath1.innerText = `Please select a tower to upgrade it.`;
+    
+    // Style the first button
+    upgradeButtonPath1.style.padding = '1vw 3vw';  // Adds space inside the button (top-bottom, left-right)
+    upgradeButtonPath1.style.fontSize = '1.5vw';  // Adjusts button text size
+    upgradeButtonPath1.style.width = 'auto';  // Auto width to fit content
+    upgradeButtonPath1.style.height = 'auto';  // Auto height to fit content
+    upgradeButtonPath1.style.whiteSpace = 'nowrap';  // Prevent text wrapping
+    upgradeButtonPath1.style.textAlign = 'center';  // Center the text
+    upgradeButtonPath1.style.border = '2px solid black';  // Optional styling for better appearance
+    upgradeButtonPath1.style.backgroundColor = '#f0f0f0';  // Optional background color
+    
+    // Create the second button
+    const upgradeButtonPath2 = document.createElement('button');
+    upgradeButtonPath2.innerText = `Please select a tower to upgrade it.`;
+    
+    // Style the second button similarly
+    upgradeButtonPath2.style.padding = '1vw 3vw';  // Adds space inside the button (top-bottom, left-right)
+    upgradeButtonPath2.style.fontSize = '1.5vw';  // Adjusts button text size
+    upgradeButtonPath2.style.width = 'auto';  // Auto width to fit content
+    upgradeButtonPath2.style.height = 'auto';  // Auto height to fit content
+    upgradeButtonPath2.style.whiteSpace = 'nowrap';  // Prevent text wrapping
+    upgradeButtonPath2.style.textAlign = 'center';  // Center the text
+    upgradeButtonPath2.style.border = '2px solid black';  // Optional styling for better appearance
+    upgradeButtonPath2.style.backgroundColor = '#f0f0f0';  // Optional background color
+    
+    // Add both buttons to the container
+    upgradeContainer.appendChild(upgradeButtonPath1);
+    upgradeContainer.appendChild(upgradeButtonPath2);
+    
+    // Append the container to the body
+    document.body.appendChild(upgradeContainer);    
+
+    let currentSelectedTower: BasicTower | null = null;
+
+    canvas.addEventListener('mousedown', (event) => {
+        let rect = canvas.getBoundingClientRect();
+        let mouseX = event.clientX - rect.left;
+        let mouseY = event.clientY - rect.top;
+        let isTowerClicked = false;
+
+        // Deselect previously selected tower
+        if (currentSelectedTower) {
+            currentSelectedTower.isClicked = false;
+            towerSelected = false;
+            currentSelectedTower = null;
+        }
+
+        // Loop through towers to check which one is clicked
+        for (let index = 0; index < towerArray.length; index++) {
+            const tower = towerArray[index];
+            if (
+                mouseX >= tower.x && mouseX <= tower.x + towerSize &&
+                mouseY >= tower.y && mouseY <= tower.y + towerSize
+            ) {
+                // Set this tower as selected
+                tower.isClicked = true;
+                towerSelected = true;
+                currentSelectedTower = tower;
+                isTowerClicked = true;
+
+                // Update the upgrade buttons
+                const updateButton = (button: HTMLButtonElement, pathUpgrades: number, upgradeText: string) => {
+                    if (pathUpgrades === 1) {
+                        button.innerText = "FULLY UPGRADED";
+                    } else {
+                        button.innerText = upgradeText;
+                    }
+                };
+
+                updateButton(upgradeButtonPath1, currentSelectedTower.path1Upgrades, 'Upgrade Firerate ($75)');
+                updateButton(upgradeButtonPath2, currentSelectedTower.path2Upgrades, 'Upgrade Damage ($100)');
+
+                if (ctx) tower.render(ctx);
+            }
+        }
+
+        // If no tower is clicked, reset the upgrade buttons
+        if (!isTowerClicked) {
+            upgradeButtonPath1.innerText = `Please select a tower to upgrade it.`;
+            upgradeButtonPath2.innerText = `Please select a tower to upgrade it.`;
+            currentSelectedTower = null;
+        }
+    });
+        
+    // Event listener for upgrading the tower (add this only once)
+    upgradeButtonPath1.addEventListener('click', () => {
+        if (gameCash > 75){
+            if (currentSelectedTower && currentSelectedTower.path1Upgrades !== 1) {
+                gameCash -= 75;
+                h2Red.innerText = `Health: ${health}`;
+                h2Green.innerText = `Cash: $${gameCash}`;
+                currentSelectedTower.upgradePath1();
+                upgradeButtonPath1.innerText = "FULLY UPGRADED";
+            }
+        }
+        else{
+            upgradeButtonPath1.innerText = "NOT ENOUGH MONEY";
+            setTimeout(() => {
+                upgradeButtonPath1.innerText = "Upgrade Firerate";
+            }, 1500);
+        }
+    });
+    
+    upgradeButtonPath2.addEventListener('click', () => {
+        if (gameCash > 100){
+            if (currentSelectedTower && currentSelectedTower.path2Upgrades !== 1) {
+                gameCash -= 100;
+                h2Red.innerText = `Health: ${health}`;
+                h2Green.innerText = `Cash: $${gameCash}`;
+                currentSelectedTower.upgradePath2();
+                upgradeButtonPath2.innerText = "FULLY UPGRADED";
+            }
+        }
+        else{
+            upgradeButtonPath2.innerText = "NOT ENOUGH MONEY";
+            setTimeout(() => {
+                upgradeButtonPath2.innerText = "Upgrade Damage";
+            }, 1500);
+        }
+    });
+    
 
     // Initial rendering of the map
     function renderMap() {
@@ -393,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }
@@ -405,12 +584,14 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ctx) {
                 if (GameHealth > 0) {
                     GameHealth -= 1; // Deduct health for reaching the end
-                    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
+                    h2Red.innerText = `Health: ${health}`;
+                    h2Green.innerText = `Cash: $${gameCash}`;
                 }
 
                 if (GameHealth <= 0) {
                     gameLost = true;
-                    gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}<br>Game Over! Press 'r' to restart`; // Update the health and cash display
+                    h2Red.innerText = `Health: ${health}`;
+                    h2Green.innerText = `Cash: $${gameCash}`; // Update the health and cash display
                 }
 
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
@@ -422,7 +603,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
                 gameCash += 10; // Add cash for killing an enemy
-                gameStats.innerHTML = `Health: ${GameHealth}<br>Cash: $${gameCash}`; // Update the health and cash display
+                h2Red.innerText = `Health: ${health}`;
+                h2Green.innerText = `Cash: $${gameCash}`;
             }
         });
 
