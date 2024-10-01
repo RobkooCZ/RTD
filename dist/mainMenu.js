@@ -2,21 +2,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('mapChoice');
     const radios = document.getElementsByName('map');
     const submitButton = document.getElementById('startGame');
+    const gamemodeRadios = document.getElementsByName('gamemode');
+    const gamemodeForm = document.getElementById('gamemodeChoice');
 
     submitButton.addEventListener('click', function(event) {
-        let isChecked = false;
+        let isMapChecked = false;
+        let isGamemodeChecked = false;
+
         for (let i = 0; i < radios.length; i++) {
             if (radios[i].checked) {
-                isChecked = true;
+                isMapChecked = true;
                 localStorage.setItem('selectedMap', radios[i].value);
-                window.location.href = 'src/public/index.html';
                 break;
             }
         }
 
-        if (!isChecked) {
+        for (let i = 0; i < gamemodeRadios.length; i++) {
+            if (gamemodeRadios[i].checked) {
+                isGamemodeChecked = true;
+                localStorage.setItem('selectedGamemode', gamemodeRadios[i].value);
+                break;
+            }
+        }
+
+        if (!isMapChecked || !isGamemodeChecked) {
             event.preventDefault();
-            alert('Please select an option before submitting.');
+            alert('Please select both a map and a gamemode before submitting.');
+        } else {
+            window.location.href = 'src/public/index.html';
         }
     });
 });

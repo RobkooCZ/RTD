@@ -191,10 +191,23 @@ class gameMap {
         this.name = name;
     }
 }
+const enemyWaves = [
+    { waveNumber: 1, enemyCount: 10, timeBetweenEnemies: 2, waveSent: false },
+    { waveNumber: 2, enemyCount: 20, timeBetweenEnemies: 2, waveSent: false },
+    { waveNumber: 3, enemyCount: 25, timeBetweenEnemies: 1, waveSent: false },
+    { waveNumber: 4, enemyCount: 30, timeBetweenEnemies: 0.5, waveSent: false },
+    { waveNumber: 5, enemyCount: 60, timeBetweenEnemies: 1, waveSent: false },
+    { waveNumber: 6, enemyCount: 20, timeBetweenEnemies: 0.25, waveSent: false },
+    { waveNumber: 7, enemyCount: 100, timeBetweenEnemies: 0.75, waveSent: false },
+    { waveNumber: 8, enemyCount: 80, timeBetweenEnemies: 0.75, waveSent: false },
+    { waveNumber: 9, enemyCount: 100, timeBetweenEnemies: 0.5, waveSent: false },
+    { waveNumber: 10, enemyCount: 100, timeBetweenEnemies: 0.25, waveSent: false },
+];
 /// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
 /// <reference path="maps/gameMap.ts" />
+/// <reference path="waves.ts" />
 // Create the master container for game stats
 const gameStats = document.createElement('div');
 // Style the container
@@ -204,7 +217,7 @@ gameStats.style.top = '3.5%';
 gameStats.style.right = '3.5%';
 gameStats.style.fontFamily = "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif";
 gameStats.style.fontSize = '5vh'; // Consistent font size
-gameStats.style.maxWidth = '15%';
+gameStats.style.maxWidth = '16%';
 gameStats.style.whiteSpace = 'nowrap'; // Prevent text wrapping
 gameStats.style.textAlign = 'center'; // Center the text
 gameStats.style.display = 'flex';
@@ -227,14 +240,24 @@ h2Green.style.color = 'white'; // Maintain white text color
 h2Green.style.fontSize = 'inherit'; // Keep the same font size as the container
 h2Green.style.fontFamily = 'inherit'; // Keep the same font family
 h2Green.style.textAlign = 'inherit'; // Keep the same text alignment
-h2Green.style.webkitTextStroke = '0.2px green'; // Outline each individual letter in red
+h2Green.style.webkitTextStroke = '0.2px green'; // Outline each individual letter in green
 h2Green.style.webkitTextFillColor = 'white'; // Ensure the text inside the outline stays white
+const h2Blue = document.createElement('h2');
+h2Blue.innerText = `Press 'E' to start!`;
+h2Blue.style.color = 'white'; // Maintain white text color
+h2Blue.style.fontSize = 'inherit'; // Keep the same font size as the container
+h2Blue.style.fontFamily = 'inherit'; // Keep the same font family
+h2Blue.style.textAlign = 'inherit'; // Keep the same text alignment
+h2Blue.style.webkitTextStroke = '0.2px blue'; // Outline each individual letter in green
+h2Blue.style.webkitTextFillColor = 'white'; // Ensure the text inside the outline stays white
 // Append the two H2 elements to the gameStats container
 gameStats.appendChild(h2Red);
 gameStats.appendChild(h2Green);
+gameStats.appendChild(h2Blue);
 // Append the gameStats container to the document body
 document.body.appendChild(gameStats);
 document.addEventListener('DOMContentLoaded', () => {
+    console.log(enemyWaves);
     const basicMap = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -413,8 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMap = []; // Currently selected map grid
     let currentMapPath = []; // Currently selected map path
     let selectedMap = localStorage.getItem('selectedMap'); // Get the selected map from the main menu
+    let selectedGamemode = localStorage.getItem('selectedGamemode'); //  Get the selected gamemode from the main menu
+    let wavesStart = false;
     let enemyPaths = []; // Array to store enemy paths
     let towerSelected = false;
+    let activeEnemiesCount = 0; // Track the number of active enemies
     enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
     enemyPaths.push(easyMapPath);
     enemyPaths.forEach(path => {
@@ -494,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             GameHealth = 100; // Reset the game health
             gameCash = 1000; // Reset the game cash
             gameLost = false; // Reset the game lost flag
+            wavesStart = false;
             h2Red.innerText = `Health: ${health}`;
             h2Green.innerText = `Cash: $${gameCash}`;
         }
@@ -501,7 +528,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // toggle to let the enemy move
     document.addEventListener('keydown', (event) => {
         if (event.key === 'e' || event.key === 'E') {
-            spawnEnemy(); // Spawn a new enemy
+            if (selectedGamemode == "waves") {
+                wavesStart = true;
+            }
+            else if (selectedGamemode == "sandbox") {
+                spawnEnemy(); // Spawn a new enemy
+            }
         }
     });
     const upgradeContainer = document.createElement('div');
@@ -651,6 +683,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
             renderMap(); // Render the map
+            if (wavesStart) {
+                let enemyWavesIndex = 0; // First wave
+                const spawnNextWave = () => {
+                    if (enemyWavesIndex < enemyWaves.length) {
+                        let gameWaves = enemyWaves[enemyWavesIndex];
+                        if (gameWaves != null && !gameWaves.waveSent) {
+                            console.log(`Wave: ${gameWaves.waveNumber}`);
+                            h2Blue.innerText = `Wave: ${gameWaves.waveNumber}/${enemyWaves.length}`;
+                            activeEnemiesCount = gameWaves.enemyCount;
+                            for (let enemyIndex = 0; enemyIndex < gameWaves.enemyCount; enemyIndex++) {
+                                (function (index) {
+                                    setTimeout(() => {
+                                        spawnEnemy(); // Spawn enemy logic
+                                        console.log(`Spawned enemy ${index + 1} of Wave ${gameWaves.waveNumber}`);
+                                    }, index * gameWaves.timeBetweenEnemies * 1000); // Schedule enemy spawn
+                                })(enemyIndex);
+                            }
+                            // Mark wave as sent after scheduling all enemy spawns
+                            gameWaves.waveSent = true;
+                            // Monitor when all enemies are defeated
+                            const checkEnemies = setInterval(() => {
+                                if (activeEnemiesCount === 0) {
+                                    clearInterval(checkEnemies); // Stop checking once all enemies are defeated
+                                    enemyWavesIndex++; // Move to the next wave
+                                    console.log(enemyWavesIndex);
+                                    gameCash += 100 + enemyWavesIndex; // Add money after beating a round
+                                    h2Green.innerText = `Cash: $${gameCash}`;
+                                    spawnNextWave(); // Spawn next wave
+                                    if (enemyWavesIndex === enemyWaves.length && activeEnemiesCount === 0) {
+                                        h2Blue.innerText = `YOU WON!`;
+                                    }
+                                }
+                            }, 500); // Check every 500ms for active enemies
+                        }
+                    }
+                };
+                spawnNextWave(); // Start the first wave
+            }
             // Render all towers
             towerArray.forEach(tower => {
                 tower.render(ctx);
@@ -727,6 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (enemy.health <= 0) {
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
+                activeEnemiesCount -= 1; // remove the enemy
                 gameCash += 10; // Add cash for killing an enemy
                 h2Red.innerText = `Health: ${health}`;
                 h2Green.innerText = `Cash: $${gameCash}`;

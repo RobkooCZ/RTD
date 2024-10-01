@@ -1,5 +1,17 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.3
+- Added a form to the main menu to pick between sandbox mode (the original one) and wave mode
+- Added 10 waves into the game, each with a different enemy count and time between enemy spawns
+- You get money after each round ($100 + roundNumber)
+- Added wave number into the top right
+
+### Balance Changes
+- None this update
+
+### Bugfixes
+- None again :D
+
 ## Alpha 0.2.2
 - Added a basic upgrade system
 - Added buttons to upgrade the towers
