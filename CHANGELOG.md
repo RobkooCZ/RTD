@@ -1,5 +1,13 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.4
+- Made a better UI, and made it more responsive
+- Updated the buttons
+- Made it so you have to click on the tower to see its range
+
+### Bugfixes
+- Fixed health not updating after losing lives
+
 ## Alpha 0.2.3
 - Added a form to the main menu to pick between sandbox mode (the original one) and wave mode
 - Added 10 waves into the game, each with a different enemy count and time between enemy spawns

@@ -7,18 +7,82 @@
 // Create the master container for game stats
 const gameStats = document.createElement('div');
 
-// Style the container
-gameStats.style.position = 'absolute';
+// Global styles
+document.body.style.margin = "0";
+document.body.style.padding = "0";
+document.body.style.boxSizing = "border-box";
+
+document.documentElement.style.margin = "0";
+document.documentElement.style.padding = "0";
+document.documentElement.style.boxSizing = "border-box";
+
+// Body and html styles
+document.body.style.width = "100%";
+document.body.style.height = "100%";
+document.body.style.display = "flex";
+document.body.style.flexDirection = "column";
+document.body.style.backgroundColor = "#1a1a1a";
+
+document.documentElement.style.width = "100%";
+document.documentElement.style.height = "100%";
+document.documentElement.style.display = "flex";
+document.documentElement.style.flexDirection = "column";
+document.documentElement.style.backgroundColor = "#1a1a1a";
+
+// Main content
+const mainContent = document.getElementById('mainContent');
+if (mainContent) {
+    mainContent.style.flex = "1";
+    mainContent.style.display = "flex";
+    mainContent.style.width = "100%";
+}
+
+// Canvas container
+const canvasContainer = document.getElementById('canvasContainer');
+if (canvasContainer) {
+    canvasContainer.style.flex = "1";
+    canvasContainer.style.display = "flex";
+    canvasContainer.style.justifyContent = "center";
+    canvasContainer.style.alignItems = "center";
+    canvasContainer.style.backgroundColor = "#444";
+}
+
+// Right container
+const rightContainer = document.getElementById('rightContainer');
+if (rightContainer) {
+    rightContainer.style.position = "relative"; // Ensure it can contain positioned elements
+    rightContainer.style.width = "420px";
+    rightContainer.style.backgroundColor = "black";
+    rightContainer.style.border = "1px solid white";
+    rightContainer.style.padding = "10px"; // Add padding for a cleaner look
+    rightContainer.style.overflowY = "auto"; // Allow vertical scrolling if needed
+}
+
+// Bottom container
+const bottomContainer = document.getElementById('bottomContainer');
+if (bottomContainer) {
+    bottomContainer.style.height = "180px";
+    bottomContainer.style.backgroundColor = "black";
+    bottomContainer.style.border = "1px solid white";
+    bottomContainer.style.position = "relative";
+    bottomContainer.style.overflow = "hidden";
+}
+
+// Canvas styles
+const canvas = document.querySelector('canvas');
+if (canvas) {
+    canvas.style.backgroundColor = "#555";
+}
+
+// Style the gameStats container
 gameStats.style.color = 'white';
-gameStats.style.top = '3.5%';
-gameStats.style.right = '3.5%';
 gameStats.style.fontFamily = "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif";
-gameStats.style.fontSize = '5vh';  // Consistent font size
-gameStats.style.maxWidth = '16%';
-gameStats.style.whiteSpace = 'nowrap';  // Prevent text wrapping
+gameStats.style.fontSize = '5vh';  // Adjust font size to fit better within the container
 gameStats.style.textAlign = 'center';  // Center the text
 gameStats.style.display = 'flex';
 gameStats.style.flexDirection = 'column';  // Stack the H2s vertically
+gameStats.style.gap = '0';  // Remove gap between elements
+gameStats.style.borderBottom = '1px solid white'
 
 // Create the first H2 element with a red outline around each letter
 const h2Red = document.createElement('h2');
@@ -28,6 +92,7 @@ h2Red.style.fontSize = 'inherit';  // Keep the same font size as the container
 h2Red.style.fontFamily = 'inherit';  // Keep the same font family
 h2Red.style.textAlign = 'inherit';  // Keep the same text alignment
 h2Red.style.letterSpacing = '0.1vw';  // Adjust spacing between letters if needed
+h2Red.style.margin = '0';  // Remove default margins
 
 // Add red outline to each letter
 h2Red.style.webkitTextStroke = '0.2px red';  // Outline each individual letter in red
@@ -40,20 +105,34 @@ h2Green.style.color = 'white';  // Maintain white text color
 h2Green.style.fontSize = 'inherit';  // Keep the same font size as the container
 h2Green.style.fontFamily = 'inherit';  // Keep the same font family
 h2Green.style.textAlign = 'inherit';  // Keep the same text alignment
+h2Green.style.margin = '0';  // Remove default margins
 
 h2Green.style.webkitTextStroke = '0.2px green';  // Outline each individual letter in green
 h2Green.style.webkitTextFillColor = 'white';  // Ensure the text inside the outline stays white
 
-
+// Create a third H2 element with a blue border around the text
 const h2Blue = document.createElement('h2');
-h2Blue.innerText = `Press 'E' to start!`;
+h2Blue.innerText = `Press E to start!`;
 h2Blue.style.color = 'white';  // Maintain white text color
 h2Blue.style.fontSize = 'inherit';  // Keep the same font size as the container
 h2Blue.style.fontFamily = 'inherit';  // Keep the same font family
 h2Blue.style.textAlign = 'inherit';  // Keep the same text alignment
+h2Blue.style.margin = '0';  // Remove default margins
 
-h2Blue.style.webkitTextStroke = '0.2px blue';  // Outline each individual letter in green
+h2Blue.style.webkitTextStroke = '0.2px blue';  // Outline each individual letter in blue
 h2Blue.style.webkitTextFillColor = 'white';  // Ensure the text inside the outline stays white
+
+// Append the H2 elements to the gameStats container
+gameStats.appendChild(h2Red);
+gameStats.appendChild(h2Green);
+gameStats.appendChild(h2Blue);
+
+// Append gameStats to the rightContainer
+if (rightContainer) {
+    rightContainer.appendChild(gameStats);
+}
+
+
 
 // Append the two H2 elements to the gameStats container
 gameStats.appendChild(h2Red);
@@ -61,7 +140,7 @@ gameStats.appendChild(h2Green);
 gameStats.appendChild(h2Blue);
 
 // Append the gameStats container to the document body
-document.body.appendChild(gameStats);
+if(rightContainer) rightContainer.appendChild(gameStats);
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log(enemyWaves);
@@ -259,6 +338,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let towerSelected: boolean = false;
     let activeEnemiesCount = 0; // Track the number of active enemies
 
+    if(selectedGamemode == "sandbox"){
+        h2Blue.innerText = `Press E to spawn enemies!`;
+        h2Blue.style.fontSize = '3vh';
+    }
+
     enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
     enemyPaths.push(easyMapPath);
 
@@ -283,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMap = maps[currentMapIndex].map;
     currentMapPath = maps[currentMapIndex].enemyPath;
 
-    h2Red.innerText = `Health: ${health}`;
+    h2Red.innerText = `Health: ${GameHealth}`;
     h2Green.innerText = `Cash: $${gameCash}`;
 
     let cursorX = 0; // Initialize cursorX
@@ -317,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if a tower already exists at this grid position
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
-                            h2Red.innerText = `Health: ${health}`;
+                            h2Red.innerText = `Health: ${GameHealth}`;
                             h2Green.innerText = `Cash: $${gameCash}`;
                             const tower: BasicTower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize, false);
                             towerArray.push(tower); // Add the tower to the array
@@ -351,8 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
             gameCash = 1000; // Reset the game cash
             gameLost = false; // Reset the game lost flag
             wavesStart = false;
-            h2Red.innerText = `Health: ${health}`;
+            h2Red.innerText = `Health: ${GameHealth}`;
             h2Green.innerText = `Cash: $${gameCash}`;
+            h2Blue.innerText = `Press E to Start!`;
         }
     });
 
@@ -370,11 +455,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const upgradeContainer = document.createElement('div');
 
-    // Position the container at the bottom 16.666% of the viewport
     upgradeContainer.style.position = 'absolute';
-    upgradeContainer.style.bottom = '5%'; 
+    upgradeContainer.style.bottom = '50%'; 
     upgradeContainer.style.left = '50%';
-    upgradeContainer.style.transform = 'translateX(-50%)';  // Center horizontally
+    upgradeContainer.style.transform = 'translate(-50%, 50%)';  // Center horizontally and vertically within bottomContainer
     upgradeContainer.style.display = 'flex';  // Flexbox for side-by-side buttons
     upgradeContainer.style.gap = '2vw';  // Add gap between the buttons
     upgradeContainer.style.alignItems = 'center';  // Center buttons vertically within this area
@@ -392,13 +476,27 @@ document.addEventListener('DOMContentLoaded', () => {
     upgradeButtonPath1.style.height = 'auto';  // Auto height to fit content
     upgradeButtonPath1.style.whiteSpace = 'nowrap';  // Prevent text wrapping
     upgradeButtonPath1.style.textAlign = 'center';  // Center the text
-    upgradeButtonPath1.style.border = '2px solid black';  // Optional styling for better appearance
-    upgradeButtonPath1.style.backgroundColor = '#f0f0f0';  // Optional background color
+    upgradeButtonPath1.style.border = '1px solid white';  // Optional styling for better appearance
+    upgradeButtonPath1.style.backgroundColor = 'black';
+    upgradeButtonPath1.style.color = 'white';
+    upgradeButtonPath1.style.borderRadius = '0.5vh';
+    upgradeButtonPath1.style.boxShadow = '0 0 0.5vh 0.5vh rgba(255, 255, 255, 0.5)'; // White shading all around
+
+    // Add hover effect for the first button
+    upgradeButtonPath1.addEventListener('mouseover', () => {
+        upgradeButtonPath1.style.backgroundColor = 'white';
+        upgradeButtonPath1.style.color = 'black';
+        upgradeButtonPath1.style.transition = 'background-color 0.3s ease-out, color 0.3s ease-out';
+    });
+
+    upgradeButtonPath1.addEventListener('mouseout', () => {
+        upgradeButtonPath1.style.backgroundColor = 'black';
+        upgradeButtonPath1.style.color = 'white';
+    });
     
     // Create the second button
     const upgradeButtonPath2 = document.createElement('button');
     upgradeButtonPath2.innerText = `Please select a tower to upgrade it.`;
-    
     // Style the second button similarly
     upgradeButtonPath2.style.padding = '1vw 3vw';  // Adds space inside the button (top-bottom, left-right)
     upgradeButtonPath2.style.fontSize = '1.5vw';  // Adjusts button text size
@@ -406,15 +504,30 @@ document.addEventListener('DOMContentLoaded', () => {
     upgradeButtonPath2.style.height = 'auto';  // Auto height to fit content
     upgradeButtonPath2.style.whiteSpace = 'nowrap';  // Prevent text wrapping
     upgradeButtonPath2.style.textAlign = 'center';  // Center the text
-    upgradeButtonPath2.style.border = '2px solid black';  // Optional styling for better appearance
-    upgradeButtonPath2.style.backgroundColor = '#f0f0f0';  // Optional background color
+    upgradeButtonPath2.style.border = '1px solid white';  // Optional styling for better appearance
+    upgradeButtonPath2.style.backgroundColor = 'black';
+    upgradeButtonPath2.style.color = 'white';
+    upgradeButtonPath2.style.borderRadius = '0.5vh';
+    upgradeButtonPath2.style.boxShadow = '0 0 0.5vh 0.5vh rgba(255, 255, 255, 0.5)'; // White shading all around
+
+    // Add hover effect for the second button
+    upgradeButtonPath2.addEventListener('mouseover', () => {
+        upgradeButtonPath2.style.backgroundColor = 'white';
+        upgradeButtonPath2.style.color = 'black';
+        upgradeButtonPath2.style.transition = 'background-color 0.3s ease-out, color 0.3s ease-out';
+    });
+
+    upgradeButtonPath2.addEventListener('mouseout', () => {
+        upgradeButtonPath2.style.backgroundColor = 'black';
+        upgradeButtonPath2.style.color = 'white';
+    });
     
     // Add both buttons to the container
     upgradeContainer.appendChild(upgradeButtonPath1);
     upgradeContainer.appendChild(upgradeButtonPath2);
     
     // Append the container to the body
-    document.body.appendChild(upgradeContainer);    
+    if(bottomContainer) bottomContainer.appendChild(upgradeContainer);    
 
     let currentSelectedTower: BasicTower | null = null;
 
@@ -473,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameCash > 75){
             if (currentSelectedTower && currentSelectedTower.path1Upgrades !== 1) {
                 gameCash -= 75;
-                h2Red.innerText = `Health: ${health}`;
+                h2Red.innerText = `Health: ${GameHealth}`;
                 h2Green.innerText = `Cash: $${gameCash}`;
                 currentSelectedTower.upgradePath1();
                 upgradeButtonPath1.innerText = "FULLY UPGRADED";
@@ -491,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameCash > 100){
             if (currentSelectedTower && currentSelectedTower.path2Upgrades !== 1) {
                 gameCash -= 100;
-                h2Red.innerText = `Health: ${health}`;
+                h2Red.innerText = `Health: ${GameHealth}`;
                 h2Green.innerText = `Cash: $${gameCash}`;
                 currentSelectedTower.upgradePath2();
                 upgradeButtonPath2.innerText = "FULLY UPGRADED";
@@ -642,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 2);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }
@@ -654,13 +767,13 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ctx) {
                 if (GameHealth > 0) {
                     GameHealth -= 1; // Deduct health for reaching the end
-                    h2Red.innerText = `Health: ${health}`;
+                    h2Red.innerText = `Health: ${GameHealth}`;
                     h2Green.innerText = `Cash: $${gameCash}`;
                 }
 
                 if (GameHealth <= 0) {
                     gameLost = true;
-                    h2Red.innerText = `Health: ${health}`;
+                    h2Red.innerText = `Health: ${GameHealth}`;
                     h2Green.innerText = `Cash: $${gameCash}`; // Update the health and cash display
                 }
 
@@ -674,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
                 activeEnemiesCount -= 1; // remove the enemy
                 gameCash += 10; // Add cash for killing an enemy
-                h2Red.innerText = `Health: ${health}`;
+                h2Red.innerText = `Health: ${GameHealth}`;
                 h2Green.innerText = `Cash: $${gameCash}`;
             }
         });

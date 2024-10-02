@@ -7,8 +7,9 @@ class BasicBullet {
     private towerSize: number;
     private enemySize: number;
     public towerUpgrade: number;
+    public pierce: number;
 
-    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number) {
+    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number) {
         this.damage = damage;
         this.towerSize = towerSize;
         this.enemySize = enemySize;
@@ -17,6 +18,7 @@ class BasicBullet {
         this.targetX = enemyX + (this.enemySize - 10) / 2; // Center the bullet in the enemy
         this.targetY = enemyY + (this.enemySize - 10) / 2;
         this.towerUpgrade = towerUpgrade;
+        this.pierce = pierce;
     }
 
     public setPosition(x: number, y: number): void {
@@ -71,7 +73,6 @@ class BasicBullet {
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
                 // Collision detected
                 enemy.takeDamage(this.damage); // Apply damage to the enemy
-                // Remove bullet after hitting the enemy
                 this.x = -10; // Move bullet off screen or similar (could also remove from array)
             }
         });

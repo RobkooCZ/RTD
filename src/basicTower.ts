@@ -55,10 +55,12 @@ class BasicTower {
         ctx.rect(this.x, this.y, this.size, this.size); // Draw the tower
         ctx.fill();
 
-        // Draw the range of the tower
-        ctx.strokeStyle = this.isClicked ? this.towerColorWhenClicked : this.towerColor;
-        ctx.beginPath();
-        ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-        ctx.stroke();
+        if (this.isClicked){
+            // Draw the range of the tower
+            ctx.strokeStyle = this.isClicked ? this.towerColorWhenClicked : this.towerColor;
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
     }
 }
