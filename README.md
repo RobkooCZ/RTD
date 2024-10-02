@@ -9,6 +9,26 @@ A website game made primarily using Typescript. I made it to practice my program
 
 ## For the full detailed list of changes and updates, please see the [Changelog](CHANGELOG.md).
 
+## Alpha 0.2.5
+- Made the game mostly black/white
+- Towers now follow this styling:
+    - Border color change means non-bullet upgrade
+    - Inner square color change means bullet upgrade
+    - Inner square count means different type of tower (not implemented yet)
+- Bullets are styled similarly to towers
+- When you check the range, it fills the border
+- Enemies' color changes based on their health, giving it the illusion of fading into the path
+- Moved styling from game.ts to style.css
+- Moved map data into its own file
+
+## Alpha 0.2.4
+- Made a better UI, and made it more responsive
+- Updated the buttons
+- Made it so you have to click on the tower to see its range
+
+### Bugfixes
+- Fixed health not updating after losing lives
+
 ## Alpha 0.2.3
 - Added a form to the main menu to pick between sandbox mode (the original one) and wave mode
 - Added 10 waves into the game, each with a different enemy count and time between enemy spawns
@@ -20,25 +40,3 @@ A website game made primarily using Typescript. I made it to practice my program
 
 ### Bugfixes
 - None again :D
-
-## Alpha 0.2.2
-- Added a basic upgrade system
-- Added buttons to upgrade the towers
-- Upgrades cost money and if you don't have money, it shows "NOT ENOUGH MONEY" on the button for 1.5s
-- Styled the buttons
-- Changed the Cash and Health a little bit
-- The site is very responsive and doesnt change much when changing resolutions (unless you change the aspect ratio from horizontal to vertical or make the resolution very small)
-
-### Balance Changes
-- Made the bullet travel 5x faster (TOWER BUFF)
-
-### Bugfixes
-- no bugs found this update :)
-
-## Alpha 0.2.1
-- Made the site scale based on your resolution
-- Towers, enemies and the grid scales accordingly, this includes tower range and shooting
-- Rewrote the enemy spawning and pathing code to properly spawn and "walk" regardless of the resolution
-
-### Bugfixes
-- Fixed an issue where a tower couldn't be placed due to a rounding error

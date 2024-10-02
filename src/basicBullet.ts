@@ -8,6 +8,7 @@ class BasicBullet {
     private enemySize: number;
     public towerUpgrade: number;
     public pierce: number;
+    private size: number = 12.5; // Size of the bullet
 
     constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number) {
         this.damage = damage;
@@ -28,15 +29,37 @@ class BasicBullet {
 
     // Method to render the bullet on the canvas
     public render(ctx: CanvasRenderingContext2D): void {
+        ctx.fillStyle = 'black'; // Set fill style for the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+
+        // Draw the border around the tower
+        ctx.strokeStyle = 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(
+            this.x,
+            this.y,
+            this.size,   
+            this.size  
+        );
+        ctx.stroke();
+
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 2; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+
         if (this.towerUpgrade == 1){
             ctx.fillStyle = 'red';
         }
         else {
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'white'; // Set color for the small square
         }
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 10, 10); // Bullet size
-        ctx.fill();
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
     }
 
     public move(enemies: BasicEnemy[], ctx: CanvasRenderingContext2D): void {
@@ -78,5 +101,9 @@ class BasicBullet {
         });
 
         this.render(ctx);
+    }
+
+    public isOutOfBounds(canvasWidth: number, canvasHeight: number): boolean {
+        return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
     }
 }

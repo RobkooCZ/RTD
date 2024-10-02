@@ -1,0 +1,120 @@
+/* Global styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1a1a1a;
+}
+
+#upgradeContainer {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: flex;
+    gap: 2vw;
+    align-items: center;
+    height: 10%;
+    justify-content: center;
+}
+
+#mainContent {
+    flex: 1;
+    display: flex;
+    width: 100%;
+}
+
+#canvasContainer {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #444;
+}
+
+#rightContainer {
+    position: relative;
+    width: 420px;
+    background-color: black;
+    border: 1px solid white;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#bottomContainer {
+    height: 180px;
+    background-color: black;
+    border: 1px solid white;
+    position: relative;
+    overflow: hidden;
+}
+
+canvas {
+    background-color: #555;
+}
+
+#gameStats {
+    color: white;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 5vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid white;
+}
+
+#h2Red {
+    color: white;
+    font-size: inherit;
+    font-family: inherit;
+    text-align: inherit;
+    letter-spacing: 0.1vw;
+    margin: 0;
+    -webkit-text-stroke: 0.2px red;
+    -webkit-text-fill-color: white;
+}
+
+#h2Green {
+    color: white;
+    font-size: inherit;
+    font-family: inherit;
+    text-align: inherit;
+    margin: 0;
+    -webkit-text-stroke: 0.2px green;
+    -webkit-text-fill-color: white;
+}
+
+#h2Blue {
+    color: white;
+    font-size: inherit;
+    font-family: inherit;
+    text-align: inherit;
+    margin: 0;
+    -webkit-text-stroke: 0.2px blue;
+    -webkit-text-fill-color: white;
+}
+
+#upgradeButtonPath1, #upgradeButtonPath2{
+    padding: 1vw 3vw;  /* Adds space inside the button (top-bottom, left-right) */
+    font-size: 1.5vw;  /* Adjusts button text size */
+    width: auto;  /* Auto width to fit content */
+    height: auto;  /* Auto height to fit content */
+    white-space: nowrap;  /* Prevent text wrapping */
+    text-align: center;  /* Center the text */
+    border: 1px solid white;  /* Optional styling for better appearance */
+    background-color: black;
+    color: white;
+    border-radius: 0.5vh;
+    box-shadow: 0 0 0.5vh 0.5vh rgba(255, 255, 255, 0.5);  /* White shading all around */
+}
+
+#upgradeButtonPath1:hover, #upgradeButtonPath2:hover {
+    background-color: white;
+    color: black;
+    transition: background-color 0.3s ease-out, color 0.3s ease-out;
+}

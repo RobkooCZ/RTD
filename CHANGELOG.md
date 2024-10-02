@@ -1,5 +1,17 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.5
+- Made the game mostly black/white
+- Towers now follow this styling:
+    - Border color change means non-bullet upgrade
+    - Inner square color change means bullet upgrade
+    - Inner square count means different type of tower (not implemented yet)
+- Bullets are styled similarly to towers
+- When you check the range, it fills the border
+- Enemies' color changes based on their health, giving it the illusion of fading into the path
+- Moved styling from game.ts to style.css
+- Moved map data into its own file
+
 ## Alpha 0.2.4
 - Made a better UI, and made it more responsive
 - Updated the buttons

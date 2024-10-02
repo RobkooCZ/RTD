@@ -9,6 +9,7 @@ class BasicBullet {
     enemySize;
     towerUpgrade;
     pierce;
+    size = 12.5; // Size of the bullet
     constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce) {
         this.damage = damage;
         this.towerSize = towerSize;
@@ -26,15 +27,28 @@ class BasicBullet {
     }
     // Method to render the bullet on the canvas
     render(ctx) {
+        ctx.fillStyle = 'black'; // Set fill style for the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the tower
+        ctx.strokeStyle = 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.stroke();
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 2; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
         if (this.towerUpgrade == 1) {
             ctx.fillStyle = 'red';
         }
         else {
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'white'; // Set color for the small square
         }
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 10, 10); // Bullet size
-        ctx.fill();
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
     }
     move(enemies, ctx) {
         const dx = this.targetX - this.x;
@@ -69,6 +83,9 @@ class BasicBullet {
         });
         this.render(ctx);
     }
+    isOutOfBounds(canvasWidth, canvasHeight) {
+        return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
+    }
 }
 class BasicEnemy {
     x;
@@ -93,26 +110,14 @@ class BasicEnemy {
             // Additional logic for enemy death can go here
         }
     }
-    // Method to render the enemy on the canvas"
-    render(ctx, health) {
-        if (health > 85 && health <= 100) {
-            ctx.fillStyle = 'white'; // Very healthy: white color
-        }
-        else if (health > 65 && health <= 85) {
-            ctx.fillStyle = 'lightgreen'; // Healthy: light green color
-        }
-        else if (health > 45 && health <= 65) {
-            ctx.fillStyle = 'yellow'; // Moderately healthy: yellow color
-        }
-        else if (health > 32 && health <= 45) {
-            ctx.fillStyle = 'orange'; // Wounded: orange color
-        }
-        else if (health > 16 && health <= 32) {
-            ctx.fillStyle = 'pink'; // Seriously wounded: pink color
-        }
-        else if (health > 0 && health <= 16) {
-            ctx.fillStyle = 'red'; // Critical condition: red color
-        }
+    // Method to render the enemy on the canvas
+    render(ctx) {
+        // Calculate the color based on health
+        const healthPercentage = Math.max(0, Math.min(100, this.health));
+        const red = Math.floor(255 * (1 - healthPercentage / 100)); // R component from 0 (black) to 255 (white)
+        const green = Math.floor(255 * (1 - healthPercentage / 100)); // G component from 0 (black) to 255 (white)
+        const blue = Math.floor(255 * (1 - healthPercentage / 100)); // B component from 0 (black) to 255 (white)
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
         ctx.beginPath();
         // Center the enemy in the grid cell
         const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
@@ -137,8 +142,8 @@ class BasicTower {
     isClicked;
     path1Upgrades = 0;
     path2Upgrades = 0;
-    towerColor = 'blue';
-    towerColorWhenClicked = 'lightblue';
+    towerColor = 'black';
+    towerColorWhenClicked = 'gray';
     constructor(range, damage, fireRate, x, y, cost, size, isClicked) {
         this.range = range;
         this.damage = damage;
@@ -157,10 +162,6 @@ class BasicTower {
         if (this.path1Upgrades === 0) {
             this.path1Upgrades++;
             this.fireRate *= 2;
-            if (this.path1Upgrades === 1) {
-                this.towerColor = 'red';
-                this.towerColorWhenClicked = 'pink';
-            }
         }
     }
     upgradePath2() {
@@ -171,27 +172,53 @@ class BasicTower {
     }
     // Method to render the tower on the canvas
     render(ctx) {
-        ctx.fillStyle = this.isClicked ? this.towerColorWhenClicked : this.towerColor;
+        // Draw the base color (entire area)
+        ctx.fillStyle = this.towerColor; // Use the normal tower color
         ctx.beginPath();
-        ctx.rect(this.x, this.y, this.size, this.size); // Draw the tower
+        ctx.rect(this.x, this.y, this.size, this.size);
         ctx.fill();
+        // Draw the border around the tower
+        ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
+        this.y + borderOffset / 2, // Draw border starting y
+        this.size - borderOffset, // Adjust width for the border
+        this.size - borderOffset);
+        ctx.stroke();
+        // Draw the clicked area precisely within the border
         if (this.isClicked) {
-            // Draw the range of the tower
-            ctx.strokeStyle = this.isClicked ? this.towerColorWhenClicked : this.towerColor;
+            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
+            ctx.beginPath();
+            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
+            this.y + 2, // Start filling exactly at the inner edge of the border
+            this.size - 4, // Fill area should be the same size as the inner border
+            this.size - 4 // Fill area should be the same size as the inner border
+            );
+            ctx.fill(); // Fill the area precisely aligned with the border
+        }
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 5; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+        ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+        // Draw the range of the tower with filling
+        if (this.isClicked) {
+            // Set the range color based on upgrades
+            const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
+            ctx.fillStyle = rangeColor; // Set the fill style to the range color
             ctx.beginPath();
             ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-            ctx.stroke();
+            ctx.globalAlpha = 0.3; // Set opacity for the filling
+            ctx.fill(); // Fill the range area with the semi-transparent color
+            ctx.globalAlpha = 1; // Reset opacity for further drawings
+            ctx.strokeStyle = rangeColor; // Use the same color for the border
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.stroke(); // Draw the range outline
         }
-    }
-}
-class gameMap {
-    map; // 2D array to store the map
-    enemyPath; // Array to store the path the enemies will take
-    name;
-    constructor(map, enemyPath, name) {
-        this.map = map;
-        this.enemyPath = enemyPath;
-        this.name = name;
     }
 }
 const enemyWaves = [
@@ -206,112 +233,177 @@ const enemyWaves = [
     { waveNumber: 9, enemyCount: 100, timeBetweenEnemies: 0.5, waveSent: false },
     { waveNumber: 10, enemyCount: 100, timeBetweenEnemies: 0.25, waveSent: false },
 ];
+class gameMap {
+    map; // 2D array to store the map
+    enemyPath; // Array to store the path the enemies will take
+    name;
+    constructor(map, enemyPath, name) {
+        this.map = map;
+        this.enemyPath = enemyPath;
+        this.name = name;
+    }
+}
+/// <reference path="gameMap.ts" />
+const basicMap = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+];
+const basicMapPath = [
+    { x: 50, y: 300 }, //first straight 
+    { x: 100, y: 300 },
+    { x: 150, y: 300 },
+    { x: 200, y: 300 },
+    { x: 250, y: 300 },
+    { x: 300, y: 300 },
+    { x: 350, y: 300 },
+    { x: 400, y: 300 },
+    { x: 450, y: 300 },
+    { x: 450, y: 250 }, //straight up
+    { x: 450, y: 200 },
+    { x: 450, y: 150 },
+    { x: 450, y: 100 },
+    { x: 450, y: 50 },
+    { x: 400, y: 50 }, // straight left
+    { x: 350, y: 50 },
+    { x: 300, y: 50 },
+    { x: 250, y: 50 },
+    { x: 200, y: 50 },
+    { x: 200, y: 100 }, // straight down
+    { x: 200, y: 150 },
+    { x: 200, y: 200 },
+    { x: 200, y: 250 },
+    { x: 200, y: 300 },
+    { x: 200, y: 350 },
+    { x: 200, y: 400 },
+    { x: 200, y: 450 },
+    { x: 200, y: 500 },
+    { x: 200, y: 550 },
+    { x: 200, y: 600 },
+    { x: 200, y: 650 },
+    { x: 200, y: 700 },
+    { x: 200, y: 750 },
+    { x: 150, y: 750 }, // straight left
+    { x: 100, y: 750 },
+    { x: 50, y: 750 },
+    { x: 50, y: 700 }, // straight up
+    { x: 50, y: 650 },
+    { x: 50, y: 600 },
+    { x: 50, y: 550 },
+    { x: 100, y: 550 }, // straight right
+    { x: 150, y: 550 },
+    { x: 200, y: 550 },
+    { x: 250, y: 550 },
+    { x: 300, y: 550 },
+    { x: 350, y: 550 },
+    { x: 400, y: 550 },
+    { x: 450, y: 550 },
+    { x: 500, y: 550 },
+    { x: 550, y: 550 },
+    { x: 600, y: 550 },
+    { x: 650, y: 550 },
+    { x: 700, y: 550 },
+    { x: 750, y: 550 },
+    { x: 800, y: 550 },
+    { x: 850, y: 550 },
+    { x: 900, y: 550 },
+    { x: 950, y: 550 },
+    { x: 950, y: 500 }, // straight up
+    { x: 950, y: 450 },
+    { x: 950, y: 400 },
+    { x: 950, y: 350 },
+    { x: 950, y: 300 },
+    { x: 950, y: 250 },
+    { x: 1000, y: 250 }, // straight right
+    { x: 1050, y: 250 },
+    { x: 1100, y: 250 },
+    { x: 1150, y: 250 },
+    { x: 1150, y: 300 }, // straight down
+    { x: 1150, y: 350 },
+    { x: 1150, y: 400 },
+    { x: 1150, y: 450 },
+    { x: 1150, y: 500 },
+    { x: 1150, y: 550 },
+    { x: 1150, y: 600 },
+    { x: 1150, y: 650 },
+    { x: 1150, y: 700 },
+    { x: 1150, y: 750 },
+    { x: 1150, y: 800 },
+    { x: 1150, y: 850 },
+];
+const easyMap = [
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+];
+const easyMapPath = [
+    { x: 350, y: 450 },
+    { x: 350, y: 400 },
+    { x: 350, y: 350 },
+    { x: 350, y: 300 },
+    { x: 350, y: 250 },
+    { x: 350, y: 200 },
+    { x: 300, y: 200 },
+    { x: 250, y: 200 },
+    { x: 200, y: 200 },
+    { x: 150, y: 200 },
+    { x: 100, y: 200 },
+    { x: 100, y: 250 },
+    { x: 100, y: 300 },
+    { x: 100, y: 350 },
+    { x: 150, y: 350 },
+    { x: 200, y: 350 },
+    { x: 250, y: 350 },
+    { x: 250, y: 300 },
+    { x: 250, y: 250 },
+    { x: 250, y: 200 },
+    { x: 250, y: 150 },
+    { x: 250, y: 100 },
+    { x: 250, y: 50 },
+    { x: 250, y: 0 },
+];
 /// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
-/// <reference path="maps/gameMap.ts" />
 /// <reference path="waves.ts" />
+/// <reference path="maps/maps.ts" />
 // Create the master container for game stats
 const gameStats = document.createElement('div');
-// Global styles
-document.body.style.margin = "0";
-document.body.style.padding = "0";
-document.body.style.boxSizing = "border-box";
-document.documentElement.style.margin = "0";
-document.documentElement.style.padding = "0";
-document.documentElement.style.boxSizing = "border-box";
-// Body and html styles
-document.body.style.width = "100%";
-document.body.style.height = "100%";
-document.body.style.display = "flex";
-document.body.style.flexDirection = "column";
-document.body.style.backgroundColor = "#1a1a1a";
-document.documentElement.style.width = "100%";
-document.documentElement.style.height = "100%";
-document.documentElement.style.display = "flex";
-document.documentElement.style.flexDirection = "column";
-document.documentElement.style.backgroundColor = "#1a1a1a";
-// Main content
-const mainContent = document.getElementById('mainContent');
-if (mainContent) {
-    mainContent.style.flex = "1";
-    mainContent.style.display = "flex";
-    mainContent.style.width = "100%";
-}
-// Canvas container
-const canvasContainer = document.getElementById('canvasContainer');
-if (canvasContainer) {
-    canvasContainer.style.flex = "1";
-    canvasContainer.style.display = "flex";
-    canvasContainer.style.justifyContent = "center";
-    canvasContainer.style.alignItems = "center";
-    canvasContainer.style.backgroundColor = "#444";
-}
-// Right container
-const rightContainer = document.getElementById('rightContainer');
-if (rightContainer) {
-    rightContainer.style.position = "relative"; // Ensure it can contain positioned elements
-    rightContainer.style.width = "420px";
-    rightContainer.style.backgroundColor = "black";
-    rightContainer.style.border = "1px solid white";
-    rightContainer.style.padding = "10px"; // Add padding for a cleaner look
-    rightContainer.style.overflowY = "auto"; // Allow vertical scrolling if needed
-}
-// Bottom container
+gameStats.id = "gameStats";
 const bottomContainer = document.getElementById('bottomContainer');
-if (bottomContainer) {
-    bottomContainer.style.height = "180px";
-    bottomContainer.style.backgroundColor = "black";
-    bottomContainer.style.border = "1px solid white";
-    bottomContainer.style.position = "relative";
-    bottomContainer.style.overflow = "hidden";
-}
-// Canvas styles
-const canvas = document.querySelector('canvas');
-if (canvas) {
-    canvas.style.backgroundColor = "#555";
-}
-// Style the gameStats container
-gameStats.style.color = 'white';
-gameStats.style.fontFamily = "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif";
-gameStats.style.fontSize = '5vh'; // Adjust font size to fit better within the container
-gameStats.style.textAlign = 'center'; // Center the text
-gameStats.style.display = 'flex';
-gameStats.style.flexDirection = 'column'; // Stack the H2s vertically
-gameStats.style.gap = '0'; // Remove gap between elements
-gameStats.style.borderBottom = '1px solid white';
+const rightContainer = document.getElementById('rightContainer');
 // Create the first H2 element with a red outline around each letter
 const h2Red = document.createElement('h2');
-h2Red.innerText = 'Red Bordered Text';
-h2Red.style.color = 'white'; // Maintain white text color
-h2Red.style.fontSize = 'inherit'; // Keep the same font size as the container
-h2Red.style.fontFamily = 'inherit'; // Keep the same font family
-h2Red.style.textAlign = 'inherit'; // Keep the same text alignment
-h2Red.style.letterSpacing = '0.1vw'; // Adjust spacing between letters if needed
-h2Red.style.margin = '0'; // Remove default margins
-// Add red outline to each letter
-h2Red.style.webkitTextStroke = '0.2px red'; // Outline each individual letter in red
-h2Red.style.webkitTextFillColor = 'white'; // Ensure the text inside the outline stays white
-// Create the second H2 element with a green border around the text (whole H2)
+h2Red.id = 'h2Red';
+// Create the second H2 element with a green outline around each letter
 const h2Green = document.createElement('h2');
-h2Green.innerText = 'Green Bordered Text';
-h2Green.style.color = 'white'; // Maintain white text color
-h2Green.style.fontSize = 'inherit'; // Keep the same font size as the container
-h2Green.style.fontFamily = 'inherit'; // Keep the same font family
-h2Green.style.textAlign = 'inherit'; // Keep the same text alignment
-h2Green.style.margin = '0'; // Remove default margins
-h2Green.style.webkitTextStroke = '0.2px green'; // Outline each individual letter in green
-h2Green.style.webkitTextFillColor = 'white'; // Ensure the text inside the outline stays white
-// Create a third H2 element with a blue border around the text
+h2Green.id = 'h2Green';
+// Create a third H2 element with a blue outline around each letter
 const h2Blue = document.createElement('h2');
+h2Blue.id = 'h2Blue';
 h2Blue.innerText = `Press E to start!`;
-h2Blue.style.color = 'white'; // Maintain white text color
-h2Blue.style.fontSize = 'inherit'; // Keep the same font size as the container
-h2Blue.style.fontFamily = 'inherit'; // Keep the same font family
-h2Blue.style.textAlign = 'inherit'; // Keep the same text alignment
-h2Blue.style.margin = '0'; // Remove default margins
-h2Blue.style.webkitTextStroke = '0.2px blue'; // Outline each individual letter in blue
-h2Blue.style.webkitTextFillColor = 'white'; // Ensure the text inside the outline stays white
 // Append the H2 elements to the gameStats container
 gameStats.appendChild(h2Red);
 gameStats.appendChild(h2Green);
@@ -328,152 +420,17 @@ gameStats.appendChild(h2Blue);
 if (rightContainer)
     rightContainer.appendChild(gameStats);
 document.addEventListener('DOMContentLoaded', () => {
-    console.log(enemyWaves);
-    const basicMap = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    ];
-    const basicMapPath = [
-        { x: 50, y: 300 }, //first straight 
-        { x: 100, y: 300 },
-        { x: 150, y: 300 },
-        { x: 200, y: 300 },
-        { x: 250, y: 300 },
-        { x: 300, y: 300 },
-        { x: 350, y: 300 },
-        { x: 400, y: 300 },
-        { x: 450, y: 300 },
-        { x: 450, y: 250 }, //straight up
-        { x: 450, y: 200 },
-        { x: 450, y: 150 },
-        { x: 450, y: 100 },
-        { x: 450, y: 50 },
-        { x: 400, y: 50 }, // straight left
-        { x: 350, y: 50 },
-        { x: 300, y: 50 },
-        { x: 250, y: 50 },
-        { x: 200, y: 50 },
-        { x: 200, y: 100 }, // straight down
-        { x: 200, y: 150 },
-        { x: 200, y: 200 },
-        { x: 200, y: 250 },
-        { x: 200, y: 300 },
-        { x: 200, y: 350 },
-        { x: 200, y: 400 },
-        { x: 200, y: 450 },
-        { x: 200, y: 500 },
-        { x: 200, y: 550 },
-        { x: 200, y: 600 },
-        { x: 200, y: 650 },
-        { x: 200, y: 700 },
-        { x: 200, y: 750 },
-        { x: 150, y: 750 }, // straight left
-        { x: 100, y: 750 },
-        { x: 50, y: 750 },
-        { x: 50, y: 700 }, // straight up
-        { x: 50, y: 650 },
-        { x: 50, y: 600 },
-        { x: 50, y: 550 },
-        { x: 100, y: 550 }, // straight right
-        { x: 150, y: 550 },
-        { x: 200, y: 550 },
-        { x: 250, y: 550 },
-        { x: 300, y: 550 },
-        { x: 350, y: 550 },
-        { x: 400, y: 550 },
-        { x: 450, y: 550 },
-        { x: 500, y: 550 },
-        { x: 550, y: 550 },
-        { x: 600, y: 550 },
-        { x: 650, y: 550 },
-        { x: 700, y: 550 },
-        { x: 750, y: 550 },
-        { x: 800, y: 550 },
-        { x: 850, y: 550 },
-        { x: 900, y: 550 },
-        { x: 950, y: 550 },
-        { x: 950, y: 500 }, // straight up
-        { x: 950, y: 450 },
-        { x: 950, y: 400 },
-        { x: 950, y: 350 },
-        { x: 950, y: 300 },
-        { x: 950, y: 250 },
-        { x: 1000, y: 250 }, // straight right
-        { x: 1050, y: 250 },
-        { x: 1100, y: 250 },
-        { x: 1150, y: 250 },
-        { x: 1150, y: 300 }, // straight down
-        { x: 1150, y: 350 },
-        { x: 1150, y: 400 },
-        { x: 1150, y: 450 },
-        { x: 1150, y: 500 },
-        { x: 1150, y: 550 },
-        { x: 1150, y: 600 },
-        { x: 1150, y: 650 },
-        { x: 1150, y: 700 },
-        { x: 1150, y: 750 },
-        { x: 1150, y: 800 },
-        { x: 1150, y: 850 },
-    ];
-    const easyMap = [
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
-        [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-        [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-    ];
-    const easyMapPath = [
-        { x: 350, y: 450 },
-        { x: 350, y: 400 },
-        { x: 350, y: 350 },
-        { x: 350, y: 300 },
-        { x: 350, y: 250 },
-        { x: 350, y: 200 },
-        { x: 300, y: 200 },
-        { x: 250, y: 200 },
-        { x: 200, y: 200 },
-        { x: 150, y: 200 },
-        { x: 100, y: 200 },
-        { x: 100, y: 250 },
-        { x: 100, y: 300 },
-        { x: 100, y: 350 },
-        { x: 150, y: 350 },
-        { x: 200, y: 350 },
-        { x: 250, y: 350 },
-        { x: 250, y: 300 },
-        { x: 250, y: 250 },
-        { x: 250, y: 200 },
-        { x: 250, y: 150 },
-        { x: 250, y: 100 },
-        { x: 250, y: 50 },
-        { x: 250, y: 0 },
-    ];
     const canvas = document.getElementById('mapCanvas');
     let rectSize = 50; // Size of each grid cell, this is the default
     let towerSize = 50; // Size of each tower, this is the default
     let enemySize = 25; // Size of each enemy, this is the default
-    // Function to average a number to prevent bad numbers
+    /**
+     * Rounds a given value to the nearest multiple of the specified average.
+     *
+     * @param value - The number to be rounded.
+     * @param average - The average or multiple to which the value should be rounded.
+     * @returns The value rounded to the nearest multiple of the average.
+     */
     function averageToNumber(value, average) {
         return Math.round(value / average) * average;
     }
@@ -512,10 +469,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let enemyPaths = []; // Array to store enemy paths
     let towerSelected = false;
     let activeEnemiesCount = 0; // Track the number of active enemies
-    if (selectedGamemode == "sandbox") {
+    if (selectedGamemode == "sandbox")
         h2Blue.innerText = `Press E to spawn enemies!`;
-        h2Blue.style.fontSize = '3vh';
-    }
+    h2Blue.style.fontSize = '3vh';
     enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
     enemyPaths.push(easyMapPath);
     enemyPaths.forEach(path => {
@@ -535,8 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     currentMap = maps[currentMapIndex].map;
     currentMapPath = maps[currentMapIndex].enemyPath;
-    h2Red.innerText = `Health: ${GameHealth}`;
-    h2Green.innerText = `Cash: $${gameCash}`;
+    function updateStatistics() {
+        h2Red.innerText = `Health: ${GameHealth}`;
+        h2Green.innerText = `Cash: $${gameCash}`;
+    }
+    updateStatistics(); // show the initial statistics
     let cursorX = 0; // Initialize cursorX
     let cursorY = 0; // Initialize cursorY
     // Mouse movement for cursor position
@@ -563,8 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Check if a tower already exists at this grid position
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost; // Deduct the tower cost from the cash
-                            h2Red.innerText = `Health: ${GameHealth}`;
-                            h2Green.innerText = `Cash: $${gameCash}`;
+                            updateStatistics();
                             const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize, false);
                             towerArray.push(tower); // Add the tower to the array
                             if (ctx) {
@@ -596,8 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameCash = 1000; // Reset the game cash
             gameLost = false; // Reset the game lost flag
             wavesStart = false;
-            h2Red.innerText = `Health: ${GameHealth}`;
-            h2Green.innerText = `Cash: $${gameCash}`;
+            updateStatistics();
             h2Blue.innerText = `Press E to Start!`;
         }
     });
@@ -613,65 +570,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     const upgradeContainer = document.createElement('div');
-    upgradeContainer.style.position = 'absolute';
-    upgradeContainer.style.bottom = '50%';
-    upgradeContainer.style.left = '50%';
-    upgradeContainer.style.transform = 'translate(-50%, 50%)'; // Center horizontally and vertically within bottomContainer
-    upgradeContainer.style.display = 'flex'; // Flexbox for side-by-side buttons
-    upgradeContainer.style.gap = '2vw'; // Add gap between the buttons
-    upgradeContainer.style.alignItems = 'center'; // Center buttons vertically within this area
-    upgradeContainer.style.height = '10%'; // Container height to vertically center the buttons
-    upgradeContainer.style.justifyContent = 'center';
+    upgradeContainer.id = 'upgradeContainer';
     // Create the first button
     const upgradeButtonPath1 = document.createElement('button');
     upgradeButtonPath1.innerText = `Please select a tower to upgrade it.`;
-    // Style the first button
-    upgradeButtonPath1.style.padding = '1vw 3vw'; // Adds space inside the button (top-bottom, left-right)
-    upgradeButtonPath1.style.fontSize = '1.5vw'; // Adjusts button text size
-    upgradeButtonPath1.style.width = 'auto'; // Auto width to fit content
-    upgradeButtonPath1.style.height = 'auto'; // Auto height to fit content
-    upgradeButtonPath1.style.whiteSpace = 'nowrap'; // Prevent text wrapping
-    upgradeButtonPath1.style.textAlign = 'center'; // Center the text
-    upgradeButtonPath1.style.border = '1px solid white'; // Optional styling for better appearance
-    upgradeButtonPath1.style.backgroundColor = 'black';
-    upgradeButtonPath1.style.color = 'white';
-    upgradeButtonPath1.style.borderRadius = '0.5vh';
-    upgradeButtonPath1.style.boxShadow = '0 0 0.5vh 0.5vh rgba(255, 255, 255, 0.5)'; // White shading all around
-    // Add hover effect for the first button
-    upgradeButtonPath1.addEventListener('mouseover', () => {
-        upgradeButtonPath1.style.backgroundColor = 'white';
-        upgradeButtonPath1.style.color = 'black';
-        upgradeButtonPath1.style.transition = 'background-color 0.3s ease-out, color 0.3s ease-out';
-    });
-    upgradeButtonPath1.addEventListener('mouseout', () => {
-        upgradeButtonPath1.style.backgroundColor = 'black';
-        upgradeButtonPath1.style.color = 'white';
-    });
+    upgradeButtonPath1.id = 'upgradeButtonPath1';
     // Create the second button
     const upgradeButtonPath2 = document.createElement('button');
     upgradeButtonPath2.innerText = `Please select a tower to upgrade it.`;
-    // Style the second button similarly
-    upgradeButtonPath2.style.padding = '1vw 3vw'; // Adds space inside the button (top-bottom, left-right)
-    upgradeButtonPath2.style.fontSize = '1.5vw'; // Adjusts button text size
-    upgradeButtonPath2.style.width = 'auto'; // Auto width to fit content
-    upgradeButtonPath2.style.height = 'auto'; // Auto height to fit content
-    upgradeButtonPath2.style.whiteSpace = 'nowrap'; // Prevent text wrapping
-    upgradeButtonPath2.style.textAlign = 'center'; // Center the text
-    upgradeButtonPath2.style.border = '1px solid white'; // Optional styling for better appearance
-    upgradeButtonPath2.style.backgroundColor = 'black';
-    upgradeButtonPath2.style.color = 'white';
-    upgradeButtonPath2.style.borderRadius = '0.5vh';
-    upgradeButtonPath2.style.boxShadow = '0 0 0.5vh 0.5vh rgba(255, 255, 255, 0.5)'; // White shading all around
-    // Add hover effect for the second button
-    upgradeButtonPath2.addEventListener('mouseover', () => {
-        upgradeButtonPath2.style.backgroundColor = 'white';
-        upgradeButtonPath2.style.color = 'black';
-        upgradeButtonPath2.style.transition = 'background-color 0.3s ease-out, color 0.3s ease-out';
-    });
-    upgradeButtonPath2.addEventListener('mouseout', () => {
-        upgradeButtonPath2.style.backgroundColor = 'black';
-        upgradeButtonPath2.style.color = 'white';
-    });
+    upgradeButtonPath2.id = 'upgradeButtonPath2';
     // Add both buttons to the container
     upgradeContainer.appendChild(upgradeButtonPath1);
     upgradeContainer.appendChild(upgradeButtonPath2);
@@ -727,8 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameCash > 75) {
             if (currentSelectedTower && currentSelectedTower.path1Upgrades !== 1) {
                 gameCash -= 75;
-                h2Red.innerText = `Health: ${GameHealth}`;
-                h2Green.innerText = `Cash: $${gameCash}`;
+                updateStatistics();
                 currentSelectedTower.upgradePath1();
                 upgradeButtonPath1.innerText = "FULLY UPGRADED";
             }
@@ -744,8 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameCash > 100) {
             if (currentSelectedTower && currentSelectedTower.path2Upgrades !== 1) {
                 gameCash -= 100;
-                h2Red.innerText = `Health: ${GameHealth}`;
-                h2Green.innerText = `Cash: $${gameCash}`;
+                updateStatistics();
                 currentSelectedTower.upgradePath2();
                 upgradeButtonPath2.innerText = "FULLY UPGRADED";
             }
@@ -762,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ctx) {
             for (let i = 0; i < currentMap.length; i++) {
                 for (let j = 0; j < currentMap[i].length; j++) {
-                    ctx.fillStyle = currentMap[i][j] === 1 ? 'brown' : 'green';
+                    ctx.fillStyle = currentMap[i][j] === 1 ? 'white' : 'black';
                     ctx.fillRect(j * rectSize, i * rectSize, rectSize, rectSize);
                 }
             }
@@ -811,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     enemyWavesIndex++; // Move to the next wave
                                     console.log(enemyWavesIndex);
                                     gameCash += 100 + enemyWavesIndex; // Add money after beating a round
-                                    h2Green.innerText = `Cash: $${gameCash}`;
+                                    updateStatistics();
                                     spawnNextWave(); // Spawn next wave
                                     if (enemyWavesIndex === enemyWaves.length && activeEnemiesCount === 0) {
                                         h2Blue.innerText = `YOU WON!`;
@@ -862,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     enemyPositionX += (dx / distance) * speed;
                     enemyPositionY += (dy / distance) * speed;
                     enemy.setPosition(enemyPositionX, enemyPositionY);
-                    enemy.render(ctx, enemy.health);
+                    enemy.render(ctx);
                 }
                 if (!gameLost) { // if the game is lost, towers dont attack
                     // Check if the enemy can attack towers
@@ -884,13 +789,11 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ctx) {
                 if (GameHealth > 0) {
                     GameHealth -= 1; // Deduct health for reaching the end
-                    h2Red.innerText = `Health: ${GameHealth}`;
-                    h2Green.innerText = `Cash: $${gameCash}`;
+                    updateStatistics();
                 }
                 if (GameHealth <= 0) {
                     gameLost = true;
-                    h2Red.innerText = `Health: ${GameHealth}`;
-                    h2Green.innerText = `Cash: $${gameCash}`; // Update the health and cash display
+                    updateStatistics();
                 }
                 enemies.splice(enemyIndex, 1); // Remove enemy from the array
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
@@ -901,8 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPathIndex.splice(enemyIndex, 1); // Remove path index for the enemy
                 activeEnemiesCount -= 1; // remove the enemy
                 gameCash += 10; // Add cash for killing an enemy
-                h2Red.innerText = `Health: ${GameHealth}`;
-                h2Green.innerText = `Cash: $${gameCash}`;
+                updateStatistics();
             }
         });
     }
