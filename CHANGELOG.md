@@ -1,5 +1,18 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.8
+- Added pierce to towers
+- Each tower has 5 pierce
+
+### Balance Changes
+- 1 -> 5 Pierce on both towers
+
+### Bugfixes
+- Fixed a bug where the bullet hit the same enemy multiple times
+
+### Known bug
+- Most bullets stay rendered on screen after they are shot, and their pierce cap isn't met
+
 ## Alpha 0.2.7
 - Added support for multiple enemies
 - Added a fast enemy

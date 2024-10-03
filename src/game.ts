@@ -482,17 +482,15 @@ document.addEventListener('keydown', (event) => {
                 tower.render(ctx);
             });
             
-            // Move and render bullets
             bullets.forEach((bullet, index) => {
                 bullet.move(enemies, ctx); // Move the bullet and check for collisions with enemies
-
-                // Check if the bullet is off-screen or has hit a target
-                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
-                    bullets.splice(index, 1); // Remove bullet if it goes off-screen
+            
+                // Remove the bullet only if it is off-screen AND its pierce count is 0
+                if ((bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) && bullet.pierce === 0) {
+                    bullets.splice(index, 1); // Remove bullet if it goes off-screen and pierce is depleted
                 }
             });
-
-
+            
             // Move all enemies
             if (enemies.length > 0) {
                 moveEnemies();
@@ -535,7 +533,7 @@ document.addEventListener('keydown', (event) => {
                             
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 2);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 5);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }

@@ -9,6 +9,30 @@ A website game made primarily using Typescript. I made it to practice my program
 
 ## For the full detailed list of changes and updates, please see the [Changelog](CHANGELOG.md).
 
+## Alpha 0.2.8
+- Added pierce to towers
+- Each tower has 5 pierce
+
+### Balance Changes
+- 1 -> 5 Pierce on both towers
+
+### Bugfixes
+- Fixed a bug where the bullet hit the same enemy multiple times
+
+### Known bug
+- Most bullets stay rendered on screen after they are shot, and their pierce cap isn't met
+
+## Alpha 0.2.7
+- Added support for multiple enemies
+- Added a fast enemy
+    - 3x the speed compared to the normal enemy 
+    - 2x less health (50HP) compared to the normal enemy 
+- Spawnable only by a random chance when you press 'E' in the Sandbox mode
+- Minor changes
+
+### Bugfixes
+- Modified the range of the towers so on higher resolution displays it isn't smaller compared to lower resolution displays
+
 ## Alpha 0.2.6
 - Added support for multiple towers
 - Added a second towers, the Minigun Tower
@@ -19,23 +43,3 @@ A website game made primarily using Typescript. I made it to practice my program
     - Same range as the Single Shot Tower
 - Below the game statistics you can see the list of towers availible, aswell as their cost, image and hotkey to place them.
 - Moved all tower related stuff to a separate 'towers' folder
-
-## Alpha 0.2.5
-- Made the game mostly black/white
-- Towers now follow this styling:
-    - Border color change means non-bullet upgrade
-    - Inner square color change means bullet upgrade
-    - Inner square count means different type of tower (not implemented yet)
-- Bullets are styled similarly to towers
-- When you check the range, it fills the border
-- Enemies' color changes based on their health, giving it the illusion of fading into the path
-- Moved styling from game.ts to style.css
-- Moved map data into its own file
-
-## Alpha 0.2.4
-- Made a better UI, and made it more responsive
-- Updated the buttons
-- Made it so you have to click on the tower to see its range
-
-### Bugfixes
-- Fixed health not updating after losing lives

@@ -10,9 +10,14 @@ class BasicBullet {
     towerUpgrade;
     pierce;
     size = 12.5; // Size of the bullet
+    isPiercing = false; // Flag to check if the bullet is currently piercing
+    hitEnemies; // Set to store enemies that have been hit by the bullet
+    lastX; // To detect if the bullet is stuck
+    lastY; // To detect if the bullet is stuck
     constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce) {
         this.damage = damage;
         this.towerSize = towerSize;
+        this.hitEnemies = new Set();
         this.enemySize = enemySize;
         this.x = towerX + (this.towerSize - 10) / 2; // Center the bullet in the tower
         this.y = towerY + (this.towerSize - 10) / 2;
@@ -20,6 +25,8 @@ class BasicBullet {
         this.targetY = enemyY + (this.enemySize - 10) / 2;
         this.towerUpgrade = towerUpgrade;
         this.pierce = pierce;
+        this.lastX = this.x; // Initial position
+        this.lastY = this.y;
     }
     setPosition(x, y) {
         this.x = x;
@@ -31,10 +38,9 @@ class BasicBullet {
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.size, this.size);
         ctx.fill();
-        // Draw the border around the tower
+        // Draw the border around the bullet
         ctx.strokeStyle = 'white'; // Set color for the border
         ctx.lineWidth = 2; // Set line width for the border
-        const borderOffset = 4; // Offset for the border
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.size, this.size);
         ctx.stroke();
@@ -51,36 +57,53 @@ class BasicBullet {
         ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
     }
     move(enemies, ctx) {
-        const dx = this.targetX - this.x;
-        const dy = this.targetY - this.y;
-        const magnitude = Math.sqrt(dx * dx + dy * dy);
-        if (magnitude === 0) {
-            return; // Already at target position, exit the function
-        }
         const speed = 10;
-        // Calculate normalized direction vector
-        const directionX = dx / magnitude;
-        const directionY = dy / magnitude;
-        // Update position
-        this.x += directionX * speed;
-        this.y += directionY * speed;
-        // Check for overshooting and snap to target if necessary
-        const distToTarget = Math.sqrt((this.targetX - this.x) ** 2 + (this.targetY - this.y) ** 2);
-        if (distToTarget < speed) {
-            this.x = this.targetX;
-            this.y = this.targetY;
+        // Move the bullet in its current direction
+        let dx = this.targetX - this.x;
+        let dy = this.targetY - this.y;
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        if (magnitude !== 0) {
+            // Normalize the direction vector and move the bullet
+            const directionX = dx / magnitude;
+            const directionY = dy / magnitude;
+            this.x += directionX * speed;
+            this.y += directionY * speed;
         }
-        // Check for collision with enemies
-        enemies.forEach((enemy, index) => {
-            const enemyCenterX = enemy.x + (this.enemySize - 10) / 2; // Center of the enemy
-            const enemyCenterY = enemy.y + (this.enemySize - 10) / 2; // Center of the enemy
+        // Track the previous position to detect if the bullet is stuck
+        const hasMoved = this.lastX !== this.x || this.lastY !== this.y;
+        this.lastX = this.x;
+        this.lastY = this.y;
+        // Check if bullet has hit an enemy and hasn't hit it before
+        enemies.forEach((enemy) => {
+            const enemyCenterX = enemy.x + (this.enemySize - 10) / 2;
+            const enemyCenterY = enemy.y + (this.enemySize - 10) / 2;
             if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
-                this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
-                // Collision detected
-                enemy.takeDamage(this.damage); // Apply damage to the enemy
-                this.x = -100; // Move bullet off screen or similar (could also remove from array)
+                this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5 &&
+                !this.hitEnemies.has(enemy)) { // Only hit if not already hit
+                // Collision detected, apply damage
+                enemy.takeDamage(this.damage);
+                this.hitEnemies.add(enemy); // Mark enemy as hit
+                // Decrease pierce count
+                this.pierce--;
+                if (this.pierce > 0) {
+                    // Continue moving in the same direction, but further out
+                    const pierceDistance = 50; // Travel a bit beyond the enemy
+                    this.targetX += (dx / magnitude) * pierceDistance; // Adjust target position
+                    this.targetY += (dy / magnitude) * pierceDistance;
+                }
+                else {
+                    // If no pierce left, mark as off-screen to be removed
+                    this.x = -100;
+                    this.y = -100;
+                }
             }
         });
+        // If the bullet is no longer moving and still has pierce left, mark it for removal
+        if (!hasMoved && this.pierce > 0) {
+            this.x = -100; // Mark it for removal
+            this.y = -100;
+        }
+        // Render the bullet
         this.render(ctx);
     }
     isOutOfBounds(canvasWidth, canvasHeight) {
@@ -660,12 +683,11 @@ document.addEventListener('DOMContentLoaded', () => {
             towerArray.forEach(tower => {
                 tower.render(ctx);
             });
-            // Move and render bullets
             bullets.forEach((bullet, index) => {
                 bullet.move(enemies, ctx); // Move the bullet and check for collisions with enemies
-                // Check if the bullet is off-screen or has hit a target
-                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
-                    bullets.splice(index, 1); // Remove bullet if it goes off-screen
+                // Remove the bullet only if it is off-screen AND its pierce count is 0
+                if ((bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) && bullet.pierce === 0) {
+                    bullets.splice(index, 1); // Remove bullet if it goes off-screen and pierce is depleted
                 }
             });
             // Move all enemies
@@ -705,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const currentTime = performance.now(); // Get the current time in milliseconds
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
-                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 2);
+                                const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 5);
                                 bullets.push(bullet); // Store bullet in the bullets array
                                 tower.lastFired = currentTime; // Update the last fired time
                             }
