@@ -96,7 +96,7 @@ class BasicBullet {
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
                 // Collision detected
                 enemy.takeDamage(this.damage); // Apply damage to the enemy
-                this.x = -10; // Move bullet off screen or similar (could also remove from array)
+                this.x = -100; // Move bullet off screen or similar (could also remove from array)
             }
         });
 

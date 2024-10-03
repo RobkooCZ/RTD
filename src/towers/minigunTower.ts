@@ -1,60 +1,34 @@
-class BasicTower {
-    public range: number;
-    public damage: number;
-    public fireRate: number;
-    public lastFired: number = 0;
-    public x: number;
-    public y: number;
-    public cost: number;
-    public size: number;
-    public isClicked: boolean;
-    public path1Upgrades: number = 0;
-    public path2Upgrades: number = 0;
-    private towerColor: string = 'black';
-    private towerColorWhenClicked: string = 'gray';
+/**
+ * Represents a Minigun Tower in the game.
+ * 
+ * @extends Tower
+ * 
+ * @param {number} x - The x-coordinate of the tower's position.
+ * @param {number} y - The y-coordinate of the tower's position.
+ * @param {boolean} isClicked - Indicates whether the tower is clicked.
+ * 
+ * 
+ * @reference path="towerClass.ts"
+ */
+/// <reference path="towerClass.ts"/>
 
-    constructor(range: number, damage: number, fireRate: number, x: number, y: number, cost: number, size: number, isClicked: boolean) {
-        this.range = range;
-        this.damage = damage;
-        this.fireRate = fireRate;
-        this.x = x;
-        this.y = y;
-        this.cost = cost;
-        this.size = size;
-        this.isClicked = isClicked;
+class minigunTower extends Tower {
+    constructor(x: number, y: number, isClicked: boolean, gridSize: number) {
+        // Call the parent constructor with specific values for SingleShotTower
+        super(100, 2, 15, x, y, 200, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
     }
 
-    public setPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
-    }
-
-    public upgradePath1(): void {
-        if (this.path1Upgrades === 0) {
-            this.path1Upgrades++;
-            this.fireRate *= 2;
-        }
-    }
-
-    public upgradePath2(): void {
-        if (this.path2Upgrades === 0) {
-            this.path2Upgrades++;
-            this.damage *= 2;
-        }
-    }
-
-    // Method to render the tower on the canvas
-    public render(ctx: CanvasRenderingContext2D): void {
+    public override render(ctx: CanvasRenderingContext2D): void {
         // Draw the base color (entire area)
         ctx.fillStyle = this.towerColor; // Use the normal tower color
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.size, this.size);
         ctx.fill();
-    
+
         // Draw the border around the tower
         ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
         ctx.lineWidth = 2; // Set line width for the border
-    
+
         const borderOffset = 4; // Offset for the border
         ctx.beginPath();
         ctx.rect(
@@ -64,7 +38,7 @@ class BasicTower {
             this.size - borderOffset    
         );
         ctx.stroke();
-    
+
         // Draw the clicked area precisely within the border
         if (this.isClicked) {
             ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
@@ -77,26 +51,26 @@ class BasicTower {
             );
             ctx.fill(); // Fill the area precisely aligned with the border
         }
-    
+
         // Draw a small white square in the center of the fill
-        const smallSquareSize = 5; // Size of the small white square
+        const smallSquareSize = 10; // Size of the small white square
         const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
         const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
-    
+
         ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
         ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
-    
+
         // Draw the range of the tower with filling
         if (this.isClicked) {
             // Set the range color based on upgrades
             const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
             ctx.fillStyle = rangeColor; // Set the fill style to the range color
-            
+
             ctx.beginPath();
             ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
             ctx.globalAlpha = 0.3; // Set opacity for the filling
             ctx.fill(); // Fill the range area with the semi-transparent color
-    
+
             ctx.globalAlpha = 1; // Reset opacity for further drawings
             ctx.strokeStyle = rangeColor; // Use the same color for the border
             ctx.beginPath();

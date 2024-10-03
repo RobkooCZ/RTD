@@ -78,7 +78,7 @@ class BasicBullet {
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5) {
                 // Collision detected
                 enemy.takeDamage(this.damage); // Apply damage to the enemy
-                this.x = -10; // Move bullet off screen or similar (could also remove from array)
+                this.x = -100; // Move bullet off screen or similar (could also remove from array)
             }
         });
         this.render(ctx);
@@ -128,97 +128,6 @@ class BasicEnemy {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
-    }
-}
-class BasicTower {
-    range;
-    damage;
-    fireRate;
-    lastFired = 0;
-    x;
-    y;
-    cost;
-    size;
-    isClicked;
-    path1Upgrades = 0;
-    path2Upgrades = 0;
-    towerColor = 'black';
-    towerColorWhenClicked = 'gray';
-    constructor(range, damage, fireRate, x, y, cost, size, isClicked) {
-        this.range = range;
-        this.damage = damage;
-        this.fireRate = fireRate;
-        this.x = x;
-        this.y = y;
-        this.cost = cost;
-        this.size = size;
-        this.isClicked = isClicked;
-    }
-    setPosition(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-    upgradePath1() {
-        if (this.path1Upgrades === 0) {
-            this.path1Upgrades++;
-            this.fireRate *= 2;
-        }
-    }
-    upgradePath2() {
-        if (this.path2Upgrades === 0) {
-            this.path2Upgrades++;
-            this.damage *= 2;
-        }
-    }
-    // Method to render the tower on the canvas
-    render(ctx) {
-        // Draw the base color (entire area)
-        ctx.fillStyle = this.towerColor; // Use the normal tower color
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.size, this.size);
-        ctx.fill();
-        // Draw the border around the tower
-        ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
-        ctx.lineWidth = 2; // Set line width for the border
-        const borderOffset = 4; // Offset for the border
-        ctx.beginPath();
-        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
-        this.y + borderOffset / 2, // Draw border starting y
-        this.size - borderOffset, // Adjust width for the border
-        this.size - borderOffset);
-        ctx.stroke();
-        // Draw the clicked area precisely within the border
-        if (this.isClicked) {
-            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
-            ctx.beginPath();
-            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
-            this.y + 2, // Start filling exactly at the inner edge of the border
-            this.size - 4, // Fill area should be the same size as the inner border
-            this.size - 4 // Fill area should be the same size as the inner border
-            );
-            ctx.fill(); // Fill the area precisely aligned with the border
-        }
-        // Draw a small white square in the center of the fill
-        const smallSquareSize = 5; // Size of the small white square
-        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
-        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
-        ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
-        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
-        // Draw the range of the tower with filling
-        if (this.isClicked) {
-            // Set the range color based on upgrades
-            const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
-            ctx.fillStyle = rangeColor; // Set the fill style to the range color
-            ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-            ctx.globalAlpha = 0.3; // Set opacity for the filling
-            ctx.fill(); // Fill the range area with the semi-transparent color
-            ctx.globalAlpha = 1; // Reset opacity for further drawings
-            ctx.strokeStyle = rangeColor; // Use the same color for the border
-            ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-            ctx.stroke(); // Draw the range outline
-        }
     }
 }
 const enemyWaves = [
@@ -384,7 +293,6 @@ const easyMapPath = [
     { x: 250, y: 50 },
     { x: 250, y: 0 },
 ];
-/// <reference path="basicTower.ts" />
 /// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
 /// <reference path="waves.ts" />
@@ -419,6 +327,49 @@ gameStats.appendChild(h2Blue);
 // Append the gameStats container to the document body
 if (rightContainer)
     rightContainer.appendChild(gameStats);
+// make a div to store tower info in the right container
+const towerDiv = document.createElement('div');
+towerDiv.id = 'towerDiv';
+if (rightContainer)
+    rightContainer.appendChild(towerDiv);
+// create divs to store tower info in the towerDiv
+const singleShotTowerDiv = document.createElement('div');
+const minigunTowerDiv = document.createElement('div');
+// Create text elements for the towers
+const singleShotTowerText = document.createElement('h3');
+singleShotTowerText.innerText = 'Single Shot Tower';
+const minigunTowerText = document.createElement('h3');
+minigunTowerText.innerText = 'Minigun Tower';
+// Create images for the towers
+const singleShotTowerImg = document.createElement('img');
+singleShotTowerImg.src = '../towers/images/SST.jpg';
+singleShotTowerImg.alt = 'Single Shot Tower';
+const minigunTowerImg = document.createElement('img');
+minigunTowerImg.src = '../towers/images/MT.jpg';
+minigunTowerImg.alt = 'Minigun Tower';
+// Create paragraph elements for the towers
+const singleShotTowerHotkey = document.createElement('p');
+singleShotTowerHotkey.innerText = `Hotkey: T`;
+const minigunTowerHotkey = document.createElement('p');
+minigunTowerHotkey.innerText = `Hotkey: S`;
+const singleShotTowerCost = document.createElement('p');
+singleShotTowerCost.id = "SSTCost";
+singleShotTowerCost.innerText = `$100`;
+const minigunTowerCost = document.createElement('p');
+minigunTowerCost.id = "MTCost";
+minigunTowerCost.innerText = `$125`;
+singleShotTowerDiv.appendChild(singleShotTowerText);
+singleShotTowerDiv.appendChild(singleShotTowerImg);
+singleShotTowerDiv.appendChild(singleShotTowerHotkey);
+singleShotTowerDiv.appendChild(singleShotTowerCost);
+minigunTowerDiv.appendChild(minigunTowerText);
+minigunTowerDiv.appendChild(minigunTowerImg);
+minigunTowerDiv.appendChild(minigunTowerHotkey);
+minigunTowerDiv.appendChild(minigunTowerCost);
+if (towerDiv) {
+    towerDiv.appendChild(singleShotTowerDiv);
+    towerDiv.appendChild(minigunTowerDiv);
+}
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('mapCanvas');
     let rectSize = 50; // Size of each grid cell, this is the default
@@ -457,7 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let health = 100;
     let GameHealth = 100;
     let gameCash = 1000;
-    let towerCost = 100;
+    let towerCost = 0;
+    let SSTC = 100;
+    let MTC = 125;
     let gameLost = false;
     let currentMapIndex = 0; // Index to track selected map
     let maps = []; // Array to store multiple maps
@@ -507,26 +460,41 @@ document.addEventListener('DOMContentLoaded', () => {
     function snapToGrid(value) {
         return Math.round(value / rectSize) * rectSize;
     }
-    // toggle to spawn a tower
+    // Toggle to spawn a tower
     document.addEventListener('keydown', (event) => {
-        if (event.key === 't' || event.key === 'T') {
+        let pressedT = event.key === 't' || event.key === 'T';
+        let pressedS = event.key === 's' || event.key === 'S';
+        if (pressedT || pressedS) {
             const snappedX = snapToGrid(cursorX);
             const snappedY = snapToGrid(cursorY);
             const gridX = snappedX / rectSize; // Column index
             const gridY = snappedY / rectSize; // Row index
             console.log(`Tower trying to be placed at: X: ${gridX}, Y: ${gridY}`);
+            if (pressedT) {
+                towerCost = SSTC;
+            }
+            else if (pressedS) {
+                towerCost = MTC;
+            }
             if (gameCash >= towerCost) {
-                // Check if the position is valid for tower placement
                 if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
-                    if (currentMap[gridY][gridX] === 0) { // Valid placement check (0 means free)
-                        // Check if a tower already exists at this grid position
+                    if (currentMap[gridY][gridX] === 0) {
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
-                            gameCash -= towerCost; // Deduct the tower cost from the cash
+                            gameCash -= towerCost;
                             updateStatistics();
-                            const tower = new BasicTower(125, damage, fireRate, snappedX, snappedY, towerCost, towerSize, false);
-                            towerArray.push(tower); // Add the tower to the array
-                            if (ctx) {
-                                tower.render(ctx); // Render the tower
+                            let tower = null; // Initialize as null
+                            if (pressedT) {
+                                tower = new SingleShotTower(snappedX, snappedY, false, rectSize);
+                            }
+                            else if (pressedS) {
+                                tower = new minigunTower(snappedX, snappedY, false, rectSize);
+                            }
+                            // Ensure tower is assigned before pushing or rendering
+                            if (tower !== null) {
+                                towerArray.push(tower);
+                                if (ctx) {
+                                    tower.render(ctx);
+                                }
                             }
                         }
                         else {
@@ -616,8 +584,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         button.innerText = upgradeText;
                     }
                 };
-                updateButton(upgradeButtonPath1, currentSelectedTower.path1Upgrades, 'Upgrade Firerate ($75)');
-                updateButton(upgradeButtonPath2, currentSelectedTower.path2Upgrades, 'Upgrade Damage ($100)');
+                if (currentSelectedTower) {
+                    updateButton(upgradeButtonPath1, currentSelectedTower.path1Upgrades, 'Upgrade Firerate ($75)');
+                    updateButton(upgradeButtonPath2, currentSelectedTower.path2Upgrades, 'Upgrade Damage ($100)');
+                }
                 if (ctx)
                     tower.render(ctx);
             }
@@ -812,3 +782,181 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMap();
     requestAnimationFrame(gameLoop); // Start the animation
 });
+class Tower {
+    range;
+    damage;
+    fireRate;
+    lastFired = 0;
+    x;
+    y;
+    cost;
+    size;
+    isClicked;
+    path1Upgrades = 0;
+    path2Upgrades = 0;
+    towerColor = 'black';
+    towerColorWhenClicked = 'gray';
+    constructor(range, damage, fireRate, x, y, cost, size, isClicked) {
+        this.range = range;
+        this.damage = damage;
+        this.fireRate = fireRate;
+        this.x = x;
+        this.y = y;
+        this.cost = cost;
+        this.size = size;
+        this.isClicked = isClicked;
+    }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    upgradePath1() {
+        if (this.path1Upgrades === 0) {
+            this.path1Upgrades++;
+            this.fireRate *= 2;
+        }
+    }
+    upgradePath2() {
+        if (this.path2Upgrades === 0) {
+            this.path2Upgrades++;
+            this.damage *= 2;
+        }
+    }
+    // Method to render the tower on the canvas
+    render(ctx) {
+        // Draw the base color (entire area)
+        ctx.fillStyle = this.towerColor; // Use the normal tower color
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the tower
+        ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
+        this.y + borderOffset / 2, // Draw border starting y
+        this.size - borderOffset, // Adjust width for the border
+        this.size - borderOffset);
+        ctx.stroke();
+        // Draw the clicked area precisely within the border
+        if (this.isClicked) {
+            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
+            ctx.beginPath();
+            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
+            this.y + 2, // Start filling exactly at the inner edge of the border
+            this.size - 4, // Fill area should be the same size as the inner border
+            this.size - 4 // Fill area should be the same size as the inner border
+            );
+            ctx.fill(); // Fill the area precisely aligned with the border
+        }
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 5; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+        ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+        // Draw the range of the tower with filling
+        if (this.isClicked) {
+            // Set the range color based on upgrades
+            const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
+            ctx.fillStyle = rangeColor; // Set the fill style to the range color
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.globalAlpha = 0.3; // Set opacity for the filling
+            ctx.fill(); // Fill the range area with the semi-transparent color
+            ctx.globalAlpha = 1; // Reset opacity for further drawings
+            ctx.strokeStyle = rangeColor; // Use the same color for the border
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.stroke(); // Draw the range outline
+        }
+    }
+}
+/**
+ * Represents a Minigun Tower in the game.
+ *
+ * @extends Tower
+ *
+ * @param {number} x - The x-coordinate of the tower's position.
+ * @param {number} y - The y-coordinate of the tower's position.
+ * @param {boolean} isClicked - Indicates whether the tower is clicked.
+ *
+ *
+ * @reference path="towerClass.ts"
+ */
+/// <reference path="towerClass.ts"/>
+class minigunTower extends Tower {
+    constructor(x, y, isClicked, gridSize) {
+        // Call the parent constructor with specific values for SingleShotTower
+        super(100, 2, 15, x, y, 200, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
+    }
+    render(ctx) {
+        // Draw the base color (entire area)
+        ctx.fillStyle = this.towerColor; // Use the normal tower color
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the tower
+        ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
+        this.y + borderOffset / 2, // Draw border starting y
+        this.size - borderOffset, // Adjust width for the border
+        this.size - borderOffset);
+        ctx.stroke();
+        // Draw the clicked area precisely within the border
+        if (this.isClicked) {
+            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
+            ctx.beginPath();
+            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
+            this.y + 2, // Start filling exactly at the inner edge of the border
+            this.size - 4, // Fill area should be the same size as the inner border
+            this.size - 4 // Fill area should be the same size as the inner border
+            );
+            ctx.fill(); // Fill the area precisely aligned with the border
+        }
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 10; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+        ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+        // Draw the range of the tower with filling
+        if (this.isClicked) {
+            // Set the range color based on upgrades
+            const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
+            ctx.fillStyle = rangeColor; // Set the fill style to the range color
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.globalAlpha = 0.3; // Set opacity for the filling
+            ctx.fill(); // Fill the range area with the semi-transparent color
+            ctx.globalAlpha = 1; // Reset opacity for further drawings
+            ctx.strokeStyle = rangeColor; // Use the same color for the border
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.stroke(); // Draw the range outline
+        }
+    }
+}
+/**
+ * Represents a Minigun Tower in the game.
+ *
+ * @extends Tower
+ *
+ * @param {number} x - The x-coordinate of the tower's position.
+ * @param {number} y - The y-coordinate of the tower's position.
+ * @param {boolean} isClicked - Indicates whether the tower is clicked.
+ *
+ *
+ * @reference path="towerClass.ts"
+ */
+/// <reference path="towerClass.ts"/>
+class SingleShotTower extends Tower {
+    constructor(x, y, isClicked, gridSize) {
+        // Call the parent constructor with specific values for SingleShotTower
+        super(100, 10, 1.5, x, y, 100, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
+    }
+}
