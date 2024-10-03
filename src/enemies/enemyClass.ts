@@ -1,4 +1,4 @@
-class BasicEnemy {
+abstract class Enemy {
     public x: number;
     public y: number;
     public speed: number;

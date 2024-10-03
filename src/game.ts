@@ -1,4 +1,3 @@
-/// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
 /// <reference path="waves.ts" />
 /// <reference path="maps/maps.ts" />
@@ -134,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     let towerArray: Tower[] = []; // Array to store the towers
     let bullets: BasicBullet[] = []; // Array to store bullets
-    let enemies: BasicEnemy[] = []; // Array to store enemies
+    let enemies: Enemy[] = []; // Array to store enemies
     let currentPathIndex: number[] = []; // Array to track path indices for multiple enemies
     let damage: number = 10;
     let fireRate: number = 2;
@@ -411,12 +410,15 @@ document.addEventListener('keydown', (event) => {
 
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
+        const rng = () => Math.floor(Math.random() * 2);
+        const randomValue = rng();
+        
         if (selectedMap === 'basicMap') {
-            const newEnemy = new BasicEnemy(0.5, 0, 300/50 * rectSize, health, enemySize, rectSize);
+            const newEnemy = randomValue === 0 ? new NormalEnemy(0, 300/50 * rectSize, rectSize) : new FastEnemy(0, 300/50 * rectSize, rectSize);
             enemies.push(newEnemy);
         }
         else if (selectedMap === 'easyMap') {
-            const newEnemy = new BasicEnemy(0.5, 350/50 * rectSize, 500/50 * rectSize, health, enemySize, rectSize);
+            const newEnemy = randomValue === 0 ? new NormalEnemy(350/50 * rectSize, 500/50 * rectSize, rectSize) : new FastEnemy(350/50 * rectSize, 500/50 * rectSize, rectSize);
             enemies.push(newEnemy);
         }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy

@@ -93,14 +93,14 @@ abstract class Tower {
             ctx.fillStyle = rangeColor; // Set the fill style to the range color
 
             ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range + this.size, 0, 2 * Math.PI);
             ctx.globalAlpha = 0.3; // Set opacity for the filling
             ctx.fill(); // Fill the range area with the semi-transparent color
 
             ctx.globalAlpha = 1; // Reset opacity for further drawings
             ctx.strokeStyle = rangeColor; // Use the same color for the border
             ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range + this.size, 0, 2 * Math.PI);
             ctx.stroke(); // Draw the range outline
         }
     }

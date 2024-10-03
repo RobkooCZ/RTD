@@ -1,8 +1,19 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.7
+- Added support for multiple enemies
+- Added a fast enemy
+    - 3x the speed compared to the normal enemy 
+    - 2x less health (50HP) compared to the normal enemy 
+- Spawnable only by a random chance when you press 'E' in the Sandbox mode
+- Minor changes
+
+### Bugfixes
+- Modified the range of the towers so on higher resolution displays it isn't smaller compared to lower resolution displays
+
 ## Alpha 0.2.6
 - Added support for multiple towers
-- Added a second towers, the Minigun Tower
+- Added a second tower, the Minigun Tower
     - Slightly different design from the Single Shot Tower, prone to change in the future
     - 10x the firerate of the Single Shot Tower
     - 5x less damage than the Single Shot Tower

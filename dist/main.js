@@ -87,49 +87,6 @@ class BasicBullet {
         return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
     }
 }
-class BasicEnemy {
-    x;
-    y;
-    speed;
-    health;
-    size; // Size of the enemy
-    gridSize;
-    constructor(speed, x, y, health, size, gridSize) {
-        this.speed = speed;
-        this.x = x;
-        this.y = y;
-        this.health = health; // Initialize health
-        this.size = size; // Initialize size
-        this.gridSize = gridSize;
-    }
-    // Method to apply damage to the enemy
-    takeDamage(amount) {
-        this.health -= amount;
-        if (this.health <= 0) {
-            this.health = 0; // Prevent negative health
-            // Additional logic for enemy death can go here
-        }
-    }
-    // Method to render the enemy on the canvas
-    render(ctx) {
-        // Calculate the color based on health
-        const healthPercentage = Math.max(0, Math.min(100, this.health));
-        const red = Math.floor(255 * (1 - healthPercentage / 100)); // R component from 0 (black) to 255 (white)
-        const green = Math.floor(255 * (1 - healthPercentage / 100)); // G component from 0 (black) to 255 (white)
-        const blue = Math.floor(255 * (1 - healthPercentage / 100)); // B component from 0 (black) to 255 (white)
-        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
-        ctx.beginPath();
-        // Center the enemy in the grid cell
-        const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
-        const centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
-        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
-        ctx.fill();
-    }
-    setPosition(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
 const enemyWaves = [
     { waveNumber: 1, enemyCount: 10, timeBetweenEnemies: 2, waveSent: false },
     { waveNumber: 2, enemyCount: 20, timeBetweenEnemies: 2, waveSent: false },
@@ -293,7 +250,6 @@ const easyMapPath = [
     { x: 250, y: 50 },
     { x: 250, y: 0 },
 ];
-/// <reference path="basicEnemy.ts" />
 /// <reference path="basicBullet.ts" />
 /// <reference path="waves.ts" />
 /// <reference path="maps/maps.ts" />
@@ -645,12 +601,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
+        const rng = () => Math.floor(Math.random() * 2);
+        const randomValue = rng();
         if (selectedMap === 'basicMap') {
-            const newEnemy = new BasicEnemy(0.5, 0, 300 / 50 * rectSize, health, enemySize, rectSize);
+            const newEnemy = randomValue === 0 ? new NormalEnemy(0, 300 / 50 * rectSize, rectSize) : new FastEnemy(0, 300 / 50 * rectSize, rectSize);
             enemies.push(newEnemy);
         }
         else if (selectedMap === 'easyMap') {
-            const newEnemy = new BasicEnemy(0.5, 350 / 50 * rectSize, 500 / 50 * rectSize, health, enemySize, rectSize);
+            const newEnemy = randomValue === 0 ? new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize) : new FastEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
             enemies.push(newEnemy);
         }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
@@ -782,6 +740,61 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMap();
     requestAnimationFrame(gameLoop); // Start the animation
 });
+class Enemy {
+    x;
+    y;
+    speed;
+    health;
+    size; // Size of the enemy
+    gridSize;
+    constructor(speed, x, y, health, size, gridSize) {
+        this.speed = speed;
+        this.x = x;
+        this.y = y;
+        this.health = health; // Initialize health
+        this.size = size; // Initialize size
+        this.gridSize = gridSize;
+    }
+    // Method to apply damage to the enemy
+    takeDamage(amount) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0; // Prevent negative health
+            // Additional logic for enemy death can go here
+        }
+    }
+    // Method to render the enemy on the canvas
+    render(ctx) {
+        // Calculate the color based on health
+        const healthPercentage = Math.max(0, Math.min(100, this.health));
+        const red = Math.floor(255 * (1 - healthPercentage / 100)); // R component from 0 (black) to 255 (white)
+        const green = Math.floor(255 * (1 - healthPercentage / 100)); // G component from 0 (black) to 255 (white)
+        const blue = Math.floor(255 * (1 - healthPercentage / 100)); // B component from 0 (black) to 255 (white)
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
+        ctx.beginPath();
+        // Center the enemy in the grid cell
+        const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
+        const centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
+        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
+        ctx.fill();
+    }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+class FastEnemy extends Enemy {
+    constructor(x, y, gridSize) {
+        // NormalEnemy with standard speed, health, and size
+        super(1.5, x, y, 50, gridSize / 2, gridSize); // speed, x, y, health, size, gridSize
+    }
+}
+class NormalEnemy extends Enemy {
+    constructor(x, y, gridSize) {
+        // NormalEnemy with standard speed, health, and size
+        super(0.5, x, y, 100, gridSize / 2, gridSize); // speed, x, y, health, size, gridSize
+    }
+}
 class Tower {
     range;
     damage;
@@ -862,13 +875,13 @@ class Tower {
             const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
             ctx.fillStyle = rangeColor; // Set the fill style to the range color
             ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range + this.size, 0, 2 * Math.PI);
             ctx.globalAlpha = 0.3; // Set opacity for the filling
             ctx.fill(); // Fill the range area with the semi-transparent color
             ctx.globalAlpha = 1; // Reset opacity for further drawings
             ctx.strokeStyle = rangeColor; // Use the same color for the border
             ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range + this.size, 0, 2 * Math.PI);
             ctx.stroke(); // Draw the range outline
         }
     }
@@ -889,7 +902,7 @@ class Tower {
 class minigunTower extends Tower {
     constructor(x, y, isClicked, gridSize) {
         // Call the parent constructor with specific values for SingleShotTower
-        super(100, 2, 15, x, y, 200, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
+        super(100, 2, 15, x, y, 100, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
     }
     render(ctx) {
         // Draw the base color (entire area)

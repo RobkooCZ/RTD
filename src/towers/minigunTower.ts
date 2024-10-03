@@ -15,7 +15,7 @@
 class minigunTower extends Tower {
     constructor(x: number, y: number, isClicked: boolean, gridSize: number) {
         // Call the parent constructor with specific values for SingleShotTower
-        super(100, 2, 15, x, y, 200, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
+        super(100, 2, 15, x, y, 100, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
     }
 
     public override render(ctx: CanvasRenderingContext2D): void {

@@ -127,7 +127,7 @@ canvas {
     text-align: inherit;
     letter-spacing: 0.1vw;
     margin: 0;
-    -webkit-text-stroke: 0.2px red;
+    -webkit-text-stroke: 0.05vh red;
     -webkit-text-fill-color: white;
 }
 
@@ -137,7 +137,7 @@ canvas {
     font-family: inherit;
     text-align: inherit;
     margin: 0;
-    -webkit-text-stroke: 0.2px green;
+    -webkit-text-stroke: 0.05vh green;
     -webkit-text-fill-color: white;
 }
 
@@ -147,7 +147,7 @@ canvas {
     font-family: inherit;
     text-align: inherit;
     margin: 0;
-    -webkit-text-stroke: 0.2px blue;
+    -webkit-text-stroke: 0.05vh blue;
     -webkit-text-fill-color: white;
 }
 

@@ -62,7 +62,7 @@ class BasicBullet {
         ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
     }
 
-    public move(enemies: BasicEnemy[], ctx: CanvasRenderingContext2D): void {
+    public move(enemies: Enemy[], ctx: CanvasRenderingContext2D): void {
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
