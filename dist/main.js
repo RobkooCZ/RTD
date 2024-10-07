@@ -155,6 +155,28 @@ const basicMap = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 ];
+function returnBasicMap() {
+    return [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    ];
+}
 const basicMapPath = [
     { x: 50, y: 300 }, //first straight 
     { x: 100, y: 300 },
@@ -415,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     // Add maps to the array
-    maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
+    maps.push(new gameMap(returnBasicMap(), basicMapPath, 'Basic Map'));
     maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
     if (selectedMap === 'basicMap') {
         currentMapIndex = 0;
@@ -462,6 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentMap[gridY][gridX] === 0) {
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost;
+                            if (pressedT) {
+                                currentMap[gridY][gridX] = 2; // Update the map to indicate a Single Shot Tower is placed
+                            }
+                            else if (pressedS) {
+                                currentMap[gridY][gridX] = 3; // Update the map to indicate a Minigun Tower is placed
+                            }
                             updateStatistics();
                             let tower = null; // Initialize as null
                             if (pressedT) {
@@ -483,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     else {
+                        console.log(`Grid number: ${currentMap[gridY][gridX]}`);
                         console.log('Tower not placed: Invalid position (path)');
                     }
                 }
@@ -504,6 +533,16 @@ document.addEventListener('DOMContentLoaded', () => {
             gameLost = false; // Reset the game lost flag
             wavesStart = false;
             updateStatistics();
+            console.log(`Map before: ${currentMap}`);
+            if (selectedMap === 'basicMap') {
+                currentMapIndex = 0;
+                maps[currentMapIndex].map = returnBasicMap();
+            }
+            else if (selectedMap === 'easyMap') {
+                currentMapIndex = 1;
+            }
+            console.log(`Map after: ${currentMap}`);
+            renderMap(); // Re-render the map
             h2Blue.innerText = `Press E to Start!`;
         }
     });

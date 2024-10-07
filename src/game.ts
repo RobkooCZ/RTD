@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add maps to the array
-    maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
+    maps.push(new gameMap(returnBasicMap(), basicMapPath, 'Basic Map'));
     maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
 
     if (selectedMap === 'basicMap') {
@@ -203,58 +203,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
   // Toggle to spawn a tower
-document.addEventListener('keydown', (event) => {
-    let pressedT: boolean = event.key === 't' || event.key === 'T';
-    let pressedS: boolean = event.key === 's' || event.key === 'S';
-    
+    document.addEventListener('keydown', (event) => {
+        let pressedT: boolean = event.key === 't' || event.key === 'T';
+        let pressedS: boolean = event.key === 's' || event.key === 'S';
+        
 
-    if (pressedT || pressedS) {
-        const snappedX = snapToGrid(cursorX);
-        const snappedY = snapToGrid(cursorY);
-        const gridX = snappedX / rectSize; // Column index
-        const gridY = snappedY / rectSize; // Row index
-        console.log(`Tower trying to be placed at: X: ${gridX}, Y: ${gridY}`);
+        if (pressedT || pressedS) {
+            const snappedX = snapToGrid(cursorX);
+            const snappedY = snapToGrid(cursorY);
+            const gridX = snappedX / rectSize; // Column index
+            const gridY = snappedY / rectSize; // Row index
+            console.log(`Tower trying to be placed at: X: ${gridX}, Y: ${gridY}`);
 
-        if (pressedT) {
-            towerCost = SSTC;
-        } else if (pressedS) {
-            towerCost = MTC;
-        }
+            if (pressedT) {
+                towerCost = SSTC;
+            } else if (pressedS) {
+                towerCost = MTC;
+            }
 
-        if (gameCash >= towerCost) {
-            if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
-                if (currentMap[gridY][gridX] === 0) {
-                    if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
-                        gameCash -= towerCost;
-                        updateStatistics();
-
-                        let tower: Tower | null = null; // Initialize as null
-
-                        if (pressedT) {
-                            tower = new SingleShotTower(snappedX, snappedY, false, rectSize);
-                        } else if (pressedS) {
-                            tower = new minigunTower(snappedX, snappedY, false, rectSize);
-                        }
-
-                        // Ensure tower is assigned before pushing or rendering
-                        if (tower !== null) {
-                            towerArray.push(tower);
-                            if (ctx) {
-                                tower.render(ctx);
+            if (gameCash >= towerCost) {
+                if (gridY >= 0 && gridY < currentMap.length && gridX >= 0 && gridX < currentMap[0].length) {
+                    if (currentMap[gridY][gridX] === 0) {
+                        if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
+                            gameCash -= towerCost;
+                            if (pressedT) {
+                                currentMap[gridY][gridX] = 2; // Update the map to indicate a Single Shot Tower is placed
+                            } else if (pressedS) {
+                                currentMap[gridY][gridX] = 3; // Update the map to indicate a Minigun Tower is placed
                             }
+                            updateStatistics();
+
+                            let tower: Tower | null = null; // Initialize as null
+
+                            if (pressedT) {
+                                tower = new SingleShotTower(snappedX, snappedY, false, rectSize);
+                            } else if (pressedS) {
+                                tower = new minigunTower(snappedX, snappedY, false, rectSize);
+                            }
+
+                            // Ensure tower is assigned before pushing or rendering
+                            if (tower !== null) {
+                                towerArray.push(tower);
+                                if (ctx) {
+                                    tower.render(ctx);
+                                }
+                            }
+                        } else {
+                            console.log('Tower not placed: A tower already exists at this position.');
                         }
                     } else {
-                        console.log('Tower not placed: A tower already exists at this position.');
+                        console.log(`Grid number: ${currentMap[gridY][gridX]}`);
+                        console.log('Tower not placed: Invalid position (path)');
                     }
                 } else {
-                    console.log('Tower not placed: Invalid position (path)');
+                    console.log('Tower not placed: Out of map bounds');
                 }
-            } else {
-                console.log('Tower not placed: Out of map bounds');
             }
         }
-    }
-});
+    });
 
 
 
@@ -270,6 +276,17 @@ document.addEventListener('keydown', (event) => {
             gameLost = false; // Reset the game lost flag
             wavesStart = false;
             updateStatistics();
+            console.log(`Map before: ${currentMap}`);
+            if (selectedMap === 'basicMap') {
+                currentMapIndex = 0;
+                maps[currentMapIndex].map = returnBasicMap();
+            }
+            else if (selectedMap === 'easyMap') {
+                currentMapIndex = 1;
+            }
+
+            console.log(`Map after: ${currentMap}`);
+            renderMap(); // Re-render the map
             h2Blue.innerText = `Press E to Start!`;
         }
     });
@@ -482,7 +499,6 @@ document.addEventListener('keydown', (event) => {
                 tower.render(ctx);
             });
 
-            
             
             bullets.forEach((bullet, index) => {
                 const currentTime = performance.now();
