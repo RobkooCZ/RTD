@@ -14,6 +14,8 @@ class BasicBullet {
     hitEnemies; // Set to store enemies that have been hit by the bullet
     lastX; // To detect if the bullet is stuck
     lastY; // To detect if the bullet is stuck
+    bulletFired = 0;
+    bulletRender = true;
     constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce) {
         this.damage = damage;
         this.towerSize = towerSize;
@@ -98,11 +100,11 @@ class BasicBullet {
                 }
             }
         });
-        // If the bullet is no longer moving and still has pierce left, mark it for removal
-        if (!hasMoved && this.pierce > 0) {
-            this.x = -100; // Mark it for removal
-            this.y = -100;
-        }
+        // const currentTime = performance.now();
+        // if (currentTime - this.bulletFired >= 1000) {
+        //     this.x = -100;  // Mark the bullet for removal after 1 second
+        //     this.y = -100;
+        // }
         // Render the bullet
         this.render(ctx);
     }
@@ -684,7 +686,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 tower.render(ctx);
             });
             bullets.forEach((bullet, index) => {
-                bullet.move(enemies, ctx); // Move the bullet and check for collisions with enemies
+                const currentTime = performance.now();
+                if (currentTime - bullet.bulletFired >= 250) {
+                    bullet.bulletRender = false;
+                    // console.log(`Current Time: ${currentTime}, bullet n${index} fired ${bullet.bulletFired}`)
+                }
+                if (bullet.bulletRender) {
+                    bullet.move(enemies, ctx); // Move the bullet and check for collisions with enemies
+                    // console.log(`bullet ${index} rendered\ncurrent time: ${currentTime}ms\nBullet last fired: ${bullet.bulletFired}`)
+                }
+                else {
+                    // console.log(`bullet ${index} spliced\ncurrent time: ${currentTime}ms\nBullet last fired: ${bullet.bulletFired}`)
+                    bullets.splice(index, 1);
+                }
                 // Remove the bullet only if it is off-screen AND its pierce count is 0
                 if ((bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) && bullet.pierce === 0) {
                     bullets.splice(index, 1); // Remove bullet if it goes off-screen and pierce is depleted
@@ -729,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
                                 const bullet = new BasicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, 5);
                                 bullets.push(bullet); // Store bullet in the bullets array
+                                bullet.bulletFired = currentTime;
                                 tower.lastFired = currentTime; // Update the last fired time
                             }
                         }

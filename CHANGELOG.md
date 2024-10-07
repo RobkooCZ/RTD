@@ -1,5 +1,11 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.2.8.1
+
+### Bugfixes
+- Fixed a bug where the bullet would stay on the screen if it didn't reach its pierce.
+    - The bullet dissapears after 250ms of staying on the screen
+
 ## Alpha 0.2.8
 - Added pierce to towers
 - Each tower has 5 pierce

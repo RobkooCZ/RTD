@@ -13,6 +13,8 @@ class BasicBullet {
     private hitEnemies: Set<Enemy>; // Set to store enemies that have been hit by the bullet
     private lastX: number; // To detect if the bullet is stuck
     private lastY: number; // To detect if the bullet is stuck
+    public bulletFired: number = 0;
+    public bulletRender: boolean = true;
 
     constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number) {
         this.damage = damage;
@@ -99,9 +101,10 @@ class BasicBullet {
     
                 if (this.pierce > 0) {
                     // Continue moving in the same direction, but further out
+                    
                     const pierceDistance = 50;  // Travel a bit beyond the enemy
                     this.targetX += (dx / magnitude) * pierceDistance; // Adjust target position
-                    this.targetY += (dy / magnitude) * pierceDistance;
+                    this.targetY += (dy / magnitude) * pierceDistance;                   
                 } else {
                     // If no pierce left, mark as off-screen to be removed
                     this.x = -100;
@@ -110,11 +113,11 @@ class BasicBullet {
             }
         });
     
-        // If the bullet is no longer moving and still has pierce left, mark it for removal
-        if (!hasMoved && this.pierce > 0) {
-            this.x = -100;  // Mark it for removal
-            this.y = -100;
-        }
+        // const currentTime = performance.now();
+        // if (currentTime - this.bulletFired >= 1000) {
+        //     this.x = -100;  // Mark the bullet for removal after 1 second
+        //     this.y = -100;
+        // }
     
         // Render the bullet
         this.render(ctx);
