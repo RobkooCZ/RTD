@@ -777,6 +777,324 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMap();
     requestAnimationFrame(gameLoop); // Start the animation
 });
+let PATH1LOCKED = false;
+let PATH2LOCKED = false;
+function lightUpBar(number, progressBar) {
+    for (let index = 0; index < number && index < progressBar.length; index++) {
+        progressBar[index].classList.add('active');
+    }
+}
+function removeLightUpBar(number, progressBar) {
+    for (let index = 0; index < number && index < progressBar.length; index++) {
+        progressBar[index].classList.remove('active');
+    }
+}
+// Function to update the upgrade buttons based on the tower's current upgrades
+const updateButton = (currentSelectedTower, button1, button2, cost1, cost2, progressBar1 = [], progressBar2 = []) => {
+    const path1Upgrades = currentSelectedTower.path1Upgrades;
+    const path2Upgrades = currentSelectedTower.path2Upgrades;
+    // Determine lock states based on upgrade levels
+    PATH1LOCKED = path1Upgrades >= 2;
+    PATH2LOCKED = path2Upgrades >= 2;
+    let costPath1 = currentSelectedTower.returnCost(path1Upgrades, 1);
+    let costPath2 = currentSelectedTower.returnCost(path2Upgrades, 2);
+    removeLightUpBar(4, progressBar1);
+    removeLightUpBar(4, progressBar2);
+    lightUpBar(path1Upgrades, progressBar1);
+    lightUpBar(path2Upgrades, progressBar2);
+    // Update Path 1 button
+    if (path1Upgrades >= 4) {
+        button1.innerText = 'MAX UPGRADED';
+        button1.style.pointerEvents = 'none';
+        cost1.innerText = 'MAX';
+    }
+    else if (currentSelectedTower.path2Upgrades > 2 && path1Upgrades >= 2) {
+        button1.innerText = 'PATH LOCKED';
+        button1.style.pointerEvents = 'none';
+        cost1.innerText = 'LOCKED';
+    }
+    else {
+        cost1.innerText = "$" + costPath1.toString();
+        button1.style.pointerEvents = 'auto'; // Make button clickable
+        button1.style.backgroundColor = ''; // Reset style
+        if (path1Upgrades == 0) {
+            button1.innerText = "Improved Rifle";
+        }
+        else if (path1Upgrades == 1) {
+            button1.innerText = "Armor Piercing Bullets";
+        }
+        else if (path1Upgrades == 2) {
+            button1.innerText = "Deadly Precision";
+        }
+        else if (path1Upgrades == 3) {
+            button1.innerText = "idk some final upgrade";
+        }
+    }
+    // Update Path 2 button
+    if (path2Upgrades >= 4) {
+        button2.innerText = 'MAX UPGRADED';
+        button2.style.pointerEvents = 'none';
+        cost2.innerText = 'MAX';
+    }
+    else if (currentSelectedTower.path1Upgrades > 2 && path2Upgrades >= 2) {
+        button2.innerText = 'PATH LOCKED';
+        button2.style.pointerEvents = 'none';
+        cost2.innerText = 'LOCKED';
+    }
+    else {
+        cost2.innerText = "$" + costPath2.toString();
+        button2.style.pointerEvents = 'auto'; // Make button clickable
+        button2.style.backgroundColor = ''; // Reset style
+        if (path2Upgrades == 0) {
+            button2.innerText = "Faster Firing";
+        }
+        else if (path2Upgrades == 1) {
+            button2.innerText = "Binoculars";
+        }
+        else if (path2Upgrades == 2) {
+            button2.innerText = "Automatic Rifle";
+        }
+        else if (path2Upgrades == 3) {
+            button2.innerText = "idk some final upgrade 2";
+        }
+    }
+};
+// Function to handle upgrading Path 1
+function upgradePath1(currentSelectedTower, gameCash, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1 = [], progressBar2 = []) {
+    const path1Upgrades = currentSelectedTower.path1Upgrades;
+    // Check if Path 1 is locked or maxed out
+    if (currentSelectedTower.path2Upgrades > 2 && path1Upgrades >= 2) {
+        return gameCash;
+    }
+    let costPath1 = currentSelectedTower.returnCost(path1Upgrades, 1);
+    if (!isNaN(costPath1))
+        currentSelectedTower.modifyTotalCost(costPath1);
+    // Check if the player can afford the upgrade
+    if (gameCash >= costPath1) {
+        // Deduct the upgrade cost
+        gameCash -= costPath1;
+        // Upgrade the tower
+        currentSelectedTower.upgradePath1();
+        // Update the buttons after upgrading
+        updateButton(currentSelectedTower, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1, progressBar2);
+    }
+    else {
+        // Not enough money, show a warning message
+        if (!(path1Upgrades == 4)) {
+            upgradeButtonPath1.innerText = 'NOT ENOUGH MONEY';
+        }
+        setTimeout(() => {
+            updateButton(currentSelectedTower, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1, progressBar2);
+        }, 1500);
+    }
+    return gameCash;
+}
+// Function to handle upgrading Path 2
+function upgradePath2(currentSelectedTower, gameCash, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1 = [], progressBar2 = []) {
+    const path2Upgrades = currentSelectedTower.path2Upgrades;
+    if (currentSelectedTower.path1Upgrades > 2 && path2Upgrades >= 2) {
+        return gameCash; // Can't upgrade
+    }
+    let costPath2 = currentSelectedTower.returnCost(path2Upgrades, 2);
+    if (!isNaN(costPath2))
+        currentSelectedTower.modifyTotalCost(costPath2);
+    // Check if the player can afford the upgrade
+    if (gameCash >= costPath2) {
+        // Deduct the upgrade cost
+        gameCash -= costPath2;
+        // Upgrade the tower
+        currentSelectedTower.upgradePath2();
+        // Update the buttons after upgrading
+        updateButton(currentSelectedTower, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1, progressBar2);
+    }
+    else {
+        // Not enough money, show a warning message
+        if (!(path2Upgrades == 4)) {
+            upgradeButtonPath2.innerText = 'NOT ENOUGH MONEY';
+        }
+        setTimeout(() => {
+            updateButton(currentSelectedTower, upgradeButtonPath1, upgradeButtonPath2, cost1, cost2, progressBar1, progressBar2);
+        }, 1500);
+    }
+    return gameCash;
+}
+class bullet {
+    damage;
+    towerOfOrigin; // Tower that fired the bullet
+    x; // Current position of the bullet
+    y; // Current position of the bullet
+    targetX; // Target position (center of the enemy)
+    targetY; // Target position (center of the enemy)
+    towerSize;
+    enemySize;
+    towerUpgrade;
+    pierce;
+    size = 12.5; // Size of the bullet   
+    hitEnemies; // Set to store enemies that have been hit by the bullet
+    lastX; // To detect if the bullet is stuck
+    lastY; // To detect if the bullet is stuck
+    bulletFired = 0;
+    bulletRender = true;
+    speed;
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
+        this.damage = damage;
+        this.towerSize = towerSize;
+        this.hitEnemies = new Set();
+        this.enemySize = enemySize;
+        this.x = towerX + (this.towerSize - 10) / 2; // Center the bullet in the tower
+        this.y = towerY + (this.towerSize - 10) / 2;
+        this.targetX = enemyX + (this.enemySize - 10) / 2; // Center the bullet in the enemy
+        this.targetY = enemyY + (this.enemySize - 10) / 2;
+        this.towerUpgrade = towerUpgrade;
+        this.pierce = pierce;
+        this.lastX = this.x; // Initial position   
+        this.lastY = this.y;
+        this.speed = speed;
+        this.towerOfOrigin = towerOfOrigin;
+    }
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    // Method to render the bullet on the canvas
+    render(ctx) {
+        ctx.fillStyle = 'black'; // Set fill style for the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the bullet
+        ctx.strokeStyle = 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.stroke();
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 2; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+        if (this.towerUpgrade == 1) {
+            ctx.fillStyle = 'red';
+        }
+        else {
+            ctx.fillStyle = 'white'; // Set color for the small square
+        }
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+    }
+    move(enemies, ctx) {
+        const speed = this.speed; // Speed of the bullet
+        // Move the bullet in its current direction
+        let dx = this.targetX - this.x;
+        let dy = this.targetY - this.y;
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        let hpOverflow;
+        if (magnitude !== 0) {
+            // Normalize the direction vector and move the bullet
+            const directionX = dx / magnitude;
+            const directionY = dy / magnitude;
+            this.x += directionX * speed;
+            this.y += directionY * speed;
+        }
+        // Track the previous position to detect if the bullet is stuck
+        // const hasMoved = this.lastX !== this.x || this.lastY !== this.y;
+        this.lastX = this.x;
+        this.lastY = this.y;
+        // Check if bullet has hit an enemy and hasn't hit it before
+        enemies.forEach((enemy) => {
+            const enemyCenterX = enemy.x + (this.enemySize - 10) / 2;
+            const enemyCenterY = enemy.y + (this.enemySize - 10) / 2;
+            if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
+                this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5 &&
+                !this.hitEnemies.has(enemy)) { // Only hit if not already hit
+                // Collision detected, apply damage, and add it to the total damage dealt by the tower
+                hpOverflow = enemy.takeDamage(this.damage);
+                if (hpOverflow != null) {
+                    if (hpOverflow <= 0) {
+                        this.towerOfOrigin.addDamageDealt(-hpOverflow);
+                        this.towerOfOrigin.addEnemyKilled();
+                    }
+                }
+                else {
+                    this.towerOfOrigin.addDamageDealt(0);
+                }
+                this.hitEnemies.add(enemy); // Mark enemy as hit
+                // Decrease pierce count
+                this.pierce--;
+                if (this.pierce > 0) {
+                    // Continue moving in the same direction, but further out
+                    const pierceDistance = 50; // Travel a bit beyond the enemy
+                    this.targetX += (dx / magnitude) * pierceDistance; // Adjust target position
+                    this.targetY += (dy / magnitude) * pierceDistance;
+                }
+                else {
+                    // If no pierce left, mark as off-screen to be removed
+                    this.x = -100;
+                    this.y = -100;
+                }
+            }
+        });
+        // Render the bullet
+        this.render(ctx);
+    }
+    isOutOfBounds(canvasWidth, canvasHeight) {
+        return this.x < 0 || this.x > canvasWidth || this.y < 0 || this.y > canvasHeight;
+    }
+}
+class classicBullet extends bullet {
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
+        // Call the parent class constructor
+        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin);
+    }
+    render(ctx) {
+        ctx.fillStyle = 'black'; // Set fill style for the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the bullet
+        ctx.strokeStyle = 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.stroke();
+        const smallSquareSize = 2;
+        const smallSquareX = this.x - smallSquareSize / 2;
+        const smallSquareY = this.y - smallSquareSize / 2;
+        if (this.towerUpgrade == 1) {
+            ctx.fillStyle = 'red';
+        }
+        else {
+            ctx.fillStyle = 'white';
+        }
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize);
+    }
+}
+class marksmanBullet extends bullet {
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
+        // Call the parent class constructor
+        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin);
+    }
+    render(ctx) {
+        ctx.fillStyle = 'black'; // Set fill style for the bullet
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the bullet
+        ctx.strokeStyle = 'white'; // Set color for the border
+        ctx.lineWidth = 2; // Set line width for the border
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.stroke();
+        const smallSquareSize = 2;
+        const smallSquareX = this.x - smallSquareSize / 2;
+        const smallSquareY = this.y - smallSquareSize / 2;
+        if (this.towerUpgrade == 1) {
+            ctx.fillStyle = 'red';
+        }
+        else {
+            ctx.fillStyle = 'white';
+        }
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize);
+    }
+}
 class Enemy {
     x;
     y;
