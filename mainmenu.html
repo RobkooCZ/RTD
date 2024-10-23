@@ -5,35 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RTD</title>
     <script src="dist/mainMenu.js"></script>
+    <link rel="stylesheet" href="src/public/styles/mainmenu.css">
 </head>
 <body>
-    <h1>MAIN MENU</h1>
-    <form class="mapChoice">
-        <h2>Choose a map</h2>
-        <label>
-            <input type="radio" name="map" value="basicMap">
-            Basic Map
-        </label>
-        <br>
-        <label>
-            <input type="radio" name="map" value="easyMap">
-            Easy Map
-        </label>
-    </form>
+    <h1 class="title">ROBKOO'S TOWER DEFENSE</h1>
+    
+    <div class="buttonsDiv">
+        <button class="buttons" id="playButton">PLAY</button>
+        <button class="buttons">LEADERBOARDS</button>
+        <button class="buttons">CREDITS</button>
+        <button class="buttons">SETTINGS</button>
+    </div>
 
-    <form class="gamemodeChoice"></form>
-        <h2>Choose a gamemode</h2>
-        <label>
-            <input type="radio" name="gamemode" value="waves">
-            Waves (enemies come in waves and you try to survive as long as possible)
-        </label>
-        <br>
-        <label>
-            <input type="radio" name="gamemode" value="sandbox">
-            Sandbox (you spawn the enemies yourself)
-        </label>
-    </form>
-    <br><br>
-    <button id="startGame">Start Game</button>
+    <div class="userMapChoice">
+        <form class="mapChoice">
+            <h2>Choose a map</h2>
+            <label>
+                <input type="radio" name="map" value="basicMap">
+                <span class="radios firstRadio">Basic Map</span>
+            </label>
+            <label>
+                <input type="radio" name="map" value="easyMap">
+                <span class="radios">Easy Map</span>
+            </label>
+        </form>
+        <div class="radioButtons">
+            <button class="confirmMap buttons">Continue</button>
+            <button class="backButton buttons">Back</button>
+        </div>
+    </div>
+    
+    <div class="userGamemodeChoice">
+        <form class="gamemodeChoice">
+            <h2>Choose a gamemode</h2>
+            <label>
+                <input type="radio" name="gamemode" value="waves">
+                <span class="radios firstRadio">Waves</span>
+            </label>
+            <label>
+                <input type="radio" name="gamemode" value="sandbox">
+                <span class="radios">Sandbox</span>
+            </label>
+        </form>
+        <div class="radioButtons">
+            <button class="confirmGamemode buttons">Continue</button>
+            <button class="backButton buttons">Back</button>
+        </div>
+    </div>
 </body>
 </html>

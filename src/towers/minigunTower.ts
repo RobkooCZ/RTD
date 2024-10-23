@@ -13,20 +13,45 @@
 /// <reference path="towerClass.ts"/>
 
 class minigunTower extends Tower {
-    constructor(x: number, y: number, isClicked: boolean, gridSize: number) {
-        // Call the parent constructor with specific values for SingleShotTower
-        super(100, 2, 15, x, y, 100, gridSize, isClicked); // Range: 100, Damage: 10, FireRate: 1.5, Cost: 75, Size: 30
+    constructor(
+        x: number, 
+        y: number, 
+        isClicked: boolean, 
+        gridSize: number, 
+        pierce: number,
+        name: string,
+        UPGRADE_COSTS = {
+            PATH1: [1, 2, 3, 4], // Costs for Path 1
+            PATH2: [1, 2, 3, 4]  // Costs for Path 2
+        },
+        sellValue: number = 0,
+        totalCost: number = 125,
+    ) {
+        // Call the parent constructor with specific values for MinigunTower
+        super(100, 2, 10, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
     }
 
-    public override render(ctx: CanvasRenderingContext2D): void {
+    public override render(ctx: CanvasRenderingContext2D, size: number): void {
         // Draw the base color (entire area)
+        this.size = size;
         ctx.fillStyle = this.towerColor; // Use the normal tower color
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.size, this.size);
         ctx.fill();
 
         // Draw the border around the tower
-        ctx.strokeStyle = (this.path1Upgrades === 1) ? 'red' : 'white'; // Set color for the border
+        if (this.path1Upgrades === 1) {
+            ctx.strokeStyle = 'red'; // Set color for the border
+        }else if (this.path1Upgrades === 2) {
+            ctx.strokeStyle = 'purple'; // Set color for the border
+        }else if (this.path1Upgrades === 3) {
+            ctx.strokeStyle = 'blue'; // Set color for the border
+        }else if (this.path1Upgrades === 4) {
+            ctx.strokeStyle = 'green'; // Set color for the border
+        }else {
+            ctx.strokeStyle = 'white'; // Set color for the border
+        }
+
         ctx.lineWidth = 2; // Set line width for the border
 
         const borderOffset = 4; // Offset for the border
@@ -57,13 +82,39 @@ class minigunTower extends Tower {
         const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
         const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
 
-        ctx.fillStyle = (this.path2Upgrades === 1) ? 'red' : 'white'; // Set color for the small square
-        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+        if (this.path2Upgrades === 1) {
+            ctx.fillStyle = 'red'; // Set color
+        }else if (this.path2Upgrades === 2) {
+            ctx.fillStyle = 'purple'; // Set color
+        }else if (this.path2Upgrades === 3) {
+            ctx.fillStyle = 'blue'; // Set color
+        }else if (this.path2Upgrades === 4) {
+            ctx.fillStyle = 'green'; // Set color
+        }else {
+            ctx.fillStyle = 'white'; // Set color
+        }
 
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+    }
+
+    public override renderRange(ctx: CanvasRenderingContext2D): void {
         // Draw the range of the tower with filling
         if (this.isClicked) {
             // Set the range color based on upgrades
-            const rangeColor = (this.path1Upgrades === 1) ? 'red' : 'lightgray'; // Default to lightgray, red if upgraded
+            let rangeColor: string;
+
+            if (this.path1Upgrades === 1) {
+                rangeColor = 'pink'; // Set color for the border
+            }else if (this.path1Upgrades === 2) {
+                rangeColor = 'violet'; // Set color for the border
+            }else if (this.path1Upgrades === 3) {
+                rangeColor = 'lightblue'; // Set color for the border
+            }else if (this.path1Upgrades === 4) {
+                rangeColor = 'lightgreen'; // Set color for the border
+            }else {
+                rangeColor = 'white'; // Set color for the border
+            }
+
             ctx.fillStyle = rangeColor; // Set the fill style to the range color
 
             ctx.beginPath();
@@ -77,5 +128,45 @@ class minigunTower extends Tower {
             ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
             ctx.stroke(); // Draw the range outline
         }
+    }
+
+    public override upgradePath1(): void {
+        if (this.path1Upgrades === 0) {
+            this.damage += 3;
+            this.pierce += 1;
+        }
+        else if (this.path1Upgrades === 1) {
+            this.damage += 2;
+            this.pierce += 1;
+        }
+        else if (this.path1Upgrades === 2) {
+            this.damage += 10;
+            this.pierce += 2;
+        }
+        else if (this.path1Upgrades === 3) {
+            this.damage += 15;
+            this.pierce += 2;
+        }
+
+        this.path1Upgrades++;
+    }
+
+    public override upgradePath2(): void {
+        if (this.path2Upgrades === 0) {
+            this.fireRate += 0.5;
+            this.range += 50;
+        }
+        else if (this.path2Upgrades === 1) {
+            this.fireRate += 0.5;
+            this.range += 50;
+        }
+        else if (this.path2Upgrades === 2) {
+            this.fireRate += 3;
+        }
+        else if (this.path2Upgrades === 3) {
+            this.fireRate += 5;
+        }
+
+        this.path2Upgrades++;
     }
 }

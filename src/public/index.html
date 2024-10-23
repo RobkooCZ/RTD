@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fun</title>
-    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
     <!-- Main content area holding canvas and right container -->
@@ -12,6 +12,16 @@
         <!-- Canvas container -->
         <div id="canvasContainer">
             <canvas id="mapCanvas" width="1500" height="900"></canvas>
+            <div class="settingsIcon">
+                <img src="images/settingsIcon.png" alt="Settings" id="settingsIcon">
+            </div>
+            <div class="settingsModal">
+                <div class="exitX">
+                    <img src="images/xIcon.png" alt="X" id="xIcon">
+                </div>
+                <h2 class="title">SETTINGS</h2>
+                <button class="backToMainMenu">Back to Main Menu</button>
+            </div>
         </div>
         <!-- Right container -->
         <div id="rightContainer"></div>
