@@ -1,0 +1,359 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1a1a1a;
+}
+
+#upgradeContainer {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: flex;
+    gap: 2vw;
+    align-items: center;
+    height: 10%;
+    justify-content: center;
+}
+
+#mainContent {
+    flex: 1;
+    display: flex;
+    width: 100%;
+}
+
+#canvasContainer {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #444;
+    position: relative;
+}
+
+#rightContainer {
+    position: relative;
+    width: 420px;
+    background-color: black;
+    border: 1px solid white;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#bottomContainer {
+    height: 180px;
+    background-color: black;
+    border: 1px solid white;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+}
+
+canvas {
+    background-color: black;
+}
+
+#gameStats {
+    color: white;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 5vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid white;
+}
+
+#towerDiv {
+    margin-top: 1vh;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1vh;
+
+    div {
+        flex: 1 1 calc(50% - 10px);
+        box-sizing: border-box;
+    }
+}
+
+#towerDiv div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: black;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    h3 {
+        margin: 0;
+        padding: 5px;
+        font-size: 1.3em;
+        color: white;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+    img {
+        width: 47px;
+        height: 47px;
+        margin: 10px 0;
+    }
+
+    p {
+        margin: 5px 0;
+        color: white;
+    }
+
+    #MTCost, #SSTCost {
+        font-size: 2em;
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-text-stroke: 0.05em green;
+        -webkit-text-fill-color: white;
+    }
+}
+
+#h2Red, #h2Green, #h2Blue {
+    color: white;
+    font-size: inherit;
+    font-family: inherit;
+    text-align: inherit;
+    letter-spacing: 0.1vw;
+    margin: 0;
+}
+
+#h2Red {
+    -webkit-text-stroke: 0.05vh red;
+    -webkit-text-fill-color: white;
+}
+
+#h2Green {
+    -webkit-text-stroke: 0.05vh green;
+    -webkit-text-fill-color: white;
+}
+
+#h2Blue {
+    -webkit-text-stroke: 0.05vh blue;
+    -webkit-text-fill-color: white;
+}
+
+#upgradeButtonPath1, #upgradeButtonPath2 {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2vh;
+    border: 1px solid white;
+    background-color: black;
+    color: white;
+    border-radius: 1vh;
+    box-shadow: 0 0 1vh 1vh rgba(255, 255, 255, 0.5);
+    width: 50vh;
+    height: 20vh;
+    margin: 0 1vh;
+    transform: scale(0.6);
+    transition: transform 0.3s ease-in-out;
+}
+
+#upgradeButtonPath1:hover, #upgradeButtonPath2:hover {
+    transform: scale(0.65);
+    background-color: white;
+    color: black;
+    transition: transform 0.15s ease-in-out;
+    .progress-bar{
+        background-color: white;
+        border-color: black;
+        transition: transform 0.15s ease-in-out;
+    }
+
+    .progress-bar.active{
+        background-color: red;
+        transition: transform 0.15s ease-in-out;
+    }
+}
+
+#upgradeButtonPath1 .upgradeName, #upgradeButtonPath2 .upgradeName {
+    font-size: 2vw;
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#upgradeButtonPath1 .imageBox, #upgradeButtonPath2 .imageBox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+}
+
+#upgradeButtonPath1 .imageBox img, #upgradeButtonPath2 .imageBox img {
+    width: 50px;
+    height: 50px;
+}
+
+#upgradeButtonPath1 .costLabel, #upgradeButtonPath2 .costLabel {
+    font-size: 1.5vw;
+    margin: 0;
+    text-align: center;
+}
+
+.progressBarContainer{
+    display: flex;
+    margin-top: 1vh;
+    gap: 0.2em;
+}
+
+.progress-bar{
+    width: 50px;
+    height: 20px;
+    background-color: black;
+    border: 2px solid white;
+    border-radius: 1vh;
+    transition: transform 0.3s ease-in-out; 
+}
+
+.progress-bar.active{
+    background-color: limegreen;
+}
+
+#towerStatisticsContainer, #sellButton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2vh;
+    padding: 1vh;
+    color: white;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    position: absolute;
+    opacity: 0;
+    border: 2px solid #444; /* Subtle border */
+    border-radius: .8vh;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Shadow for depth */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transition effects */
+    transform: translateY(-10px); /* Slightly lift the container initially */
+}
+
+#towerStatisticsContainer {
+    top: 12%;
+    left: 1%;
+    background: linear-gradient(135deg, #333, #000);
+}
+
+#sellButton {
+    bottom: 12%;
+    left: 1%;
+    background: linear-gradient(135deg, pink, red);
+}
+
+#sellButton:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+#towerStatisticsContainer.active, #sellButton.active {
+    opacity: 1;
+    transform: translateY(0); /* Bring it back to its original position when active */
+}
+
+#towerStatisticsContainer h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.5em;
+    text-align: left; /* Align title to the left */
+}
+
+.settingsIcon{
+    position: absolute;
+    top: 1vh;
+    right: 1vh;
+    
+    img{
+        width: 6vh;
+        height: 6vh;
+    }
+}
+
+.settingsIcon:hover{
+    cursor: pointer;
+}
+
+.settingsModal {
+    z-index: 500;
+    display: none;
+    position: absolute;
+    overflow: hidden;
+    top: 50%;
+    left: 50%;
+    color: white;
+    background-color: black;
+    transform: translate(-50%, -50%);
+    border: 1vh solid white;
+    border-radius: 1vh;
+    width: 20%;
+    height: 50%;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.settingsModal.active{
+    display: flex;
+}
+
+.exitX {
+    position: absolute;
+    top: 1vh;
+    right: 1vh;
+}
+
+#xIcon {
+    width: 2vh;
+    height: 2vh;
+}
+
+#xIcon:hover {
+    cursor: pointer;
+}
+
+.title {
+    font-size: 2vw;
+    margin-top: 1vh;
+    text-align: center;
+}
+
+.backToMainMenu {
+    position: absolute;
+    bottom: 1vh;
+    left: 50%;
+    width: 75%;
+    transform: translateX(-50%);
+    border: 1px solid white;
+    background-color: black;
+    z-index: 1000;
+    border-radius: .5vh;
+    color: white;
+    padding: 1vh 2vh;
+    transition: ease-in-out .2s;
+    transform-origin: center;
+}
+
+.backToMainMenu:hover{
+    background-color: white;
+    color: black;
+    transition: ease-in-out .2s;
+    transform: translateX(-50%);
+    cursor: pointer;
+}

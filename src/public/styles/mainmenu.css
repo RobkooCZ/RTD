@@ -1,0 +1,121 @@
+* {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.forms {
+    opacity: 0;
+    position: absolute;
+}
+
+.forms.active {
+    opacity: 1;
+    position: relative;
+}
+
+.title{
+    color: black;
+    font-size: 5em;
+    text-align: center;
+    margin-top: 5vh;
+    text-shadow: 
+        -1px -1px 0 #fff,  
+        1px -1px 0 #fff,
+        -1px 1px 0 #fff,
+        1px 1px 0 #fff;
+}
+
+.buttonsDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+    justify-content: center;
+    align-items: center;
+    height: 10%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.buttons{
+    background-color: black;
+    color: white;
+    border: .1vh solid white;
+    border-radius: 1vh;
+    transition: ease-in-out .2s;
+    padding: 1vh;
+    font-size: 3em;
+    cursor: pointer;
+}
+
+.buttons:hover{
+    background-color: white;
+    color: black;
+    transform: scale(1.1);
+    transition: ease-in-out .2s;
+}
+
+.buttonsDiv.active{
+    display: none;
+}
+
+.userMapChoice, .userGamemodeChoice {
+    display: none; /* Hidden by default */
+    flex-direction: column; /* Arrange items in a column */
+    gap: 2vh;
+    justify-content: center;
+    align-items: center;
+    height: 10%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    .mapChoice, .gamemodeChoice {
+        h2 {
+            color: white;
+        }
+    }
+}
+
+.radios {
+    background-color: black; /* Default background color */
+    color: white;
+    border: .1vh solid white;
+    border-radius: 1vh;
+    transition: background-color ease-in-out .2s, color ease-in-out .2s;
+    padding: 1vh;
+    font-size: 3em;
+    display: inline-block; /* Makes the label behave like a button */
+    cursor: pointer; /* Pointer to indicate it's clickable */
+    width: 100%; /* Full width for each button */
+    text-align: center; /* Center the text inside the button */
+}
+
+.firstRadio{
+    margin-bottom: 5vh;
+}
+
+input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+/* Checked state: lime green for the selected option */
+input[type="radio"]:checked + .radios {
+    background-color: limegreen; /* Change background color */
+    color: black; /* Change text color for contrast */
+}
+
+.userMapChoice.active, .userGamemodeChoice.active{
+    display: flex;
+}
+
+.radioButtons{
+    display: flex;
+    flex-direction: row;
+    gap: 2vw;
+    justify-content: center;
+}

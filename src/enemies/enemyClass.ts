@@ -3,35 +3,36 @@ abstract class Enemy {
     public y: number;
     public speed: number;
     public health: number;
-    private size: number; // Size of the enemy
-    private gridSize: number;
+    public size: number; 
+    public gridSize: number;
+    public fortified: boolean;
+    public maxHealth: number;
 
-    constructor(speed: number, x: number, y: number, health: number, size: number, gridSize: number) {
+    constructor(speed: number, x: number, y: number, health: number, size: number, gridSize: number, fortified: boolean, maxHealth: number) {
         this.speed = speed;
         this.x = x;
         this.y = y;
-        this.health = health; // Initialize health
-        this.size = size; // Initialize size
+        this.health = health; 
+        this.size = size; 
         this.gridSize = gridSize;
+        this.fortified = fortified;
+        this.maxHealth = maxHealth;
     }
 
     // Method to apply damage to the enemy
-    takeDamage(amount: number) {
+    public takeDamage(amount: number) {
         this.health -= amount;
-        if (this.health <= 0) {
-            this.health = 0; // Prevent negative health
-            // Additional logic for enemy death can go here
-        }
+        return this.health;
     }
 
     // Method to render the enemy on the canvas
-    public render(ctx: CanvasRenderingContext2D): void {
+    public render(ctx: CanvasRenderingContext2D, size: number): void {
         // Calculate the color based on health
         const healthPercentage = Math.max(0, Math.min(100, this.health));
         const red = Math.floor(255 * (1 - healthPercentage / 100));   // R component from 0 (black) to 255 (white)
         const green = Math.floor(255 * (1 - healthPercentage / 100)); // G component from 0 (black) to 255 (white)
         const blue = Math.floor(255 * (1 - healthPercentage / 100));  // B component from 0 (black) to 255 (white)
-
+        this.size = size; // Set the size of the enemy
         ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
 
         ctx.beginPath();
@@ -47,5 +48,14 @@ abstract class Enemy {
     public setPosition(x: number, y: number) {
         this.x = x;
         this.y = y;
+    }
+
+    public calculateHealthColor(health: number, maxHealth: number){
+        const currentHealth = Math.max(0, health);
+        const red = Math.floor(255 * (1 - currentHealth / maxHealth));   // R component from 0 (black) to 255 (white)
+        const green = Math.floor(255 * (1 - currentHealth / maxHealth)); // G component from 0 (black) to 255 (white)
+        const blue = Math.floor(255 * (1 - currentHealth / maxHealth));  // B component from 0 (black) to 255 (white)
+        
+        return [red, green, blue];
     }
 }

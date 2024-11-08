@@ -1,5 +1,6 @@
-class BasicBullet {
+abstract class bullet {
     public damage: number;
+    public towerOfOrigin: Tower; // Tower that fired the bullet
     public x: number; // Current position of the bullet
     public y: number; // Current position of the bullet
     public targetX: number; // Target position (center of the enemy)
@@ -8,15 +9,16 @@ class BasicBullet {
     private enemySize: number;
     public towerUpgrade: number;
     public pierce: number;
-    private size: number = 12.5; // Size of the bullet
-    private isPiercing: boolean = false; // Flag to check if the bullet is currently piercing
+    public size: number = 12.5; // Size of the bullet   
     private hitEnemies: Set<Enemy>; // Set to store enemies that have been hit by the bullet
     private lastX: number; // To detect if the bullet is stuck
     private lastY: number; // To detect if the bullet is stuck
     public bulletFired: number = 0;
     public bulletRender: boolean = true;
+    public speed: number;
+    public armorPiercing: boolean;
 
-    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number) {
+    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number, speed: number, towerOfOrigin: Tower, armorPiercing: boolean) {
         this.damage = damage;
         this.towerSize = towerSize;
         this.hitEnemies = new Set();
@@ -27,8 +29,11 @@ class BasicBullet {
         this.targetY = enemyY + (this.enemySize - 10) / 2;
         this.towerUpgrade = towerUpgrade;
         this.pierce = pierce;
-        this.lastX = this.x;  // Initial position
+        this.lastX = this.x;  // Initial position   
         this.lastY = this.y;
+        this.speed = speed;
+        this.towerOfOrigin = towerOfOrigin;
+        this.armorPiercing = armorPiercing;
     }
 
     public setPosition(x: number, y: number): void {
@@ -64,12 +69,13 @@ class BasicBullet {
     }
 
     public move(enemies: Enemy[], ctx: CanvasRenderingContext2D): void {
-        const speed = 10;
+        const speed = this.speed; // Speed of the bullet
     
         // Move the bullet in its current direction
         let dx = this.targetX - this.x;
         let dy = this.targetY - this.y;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
+        let hpOverflow: number | undefined;
     
         if (magnitude !== 0) {
             // Normalize the direction vector and move the bullet
@@ -80,7 +86,7 @@ class BasicBullet {
         }
         
         // Track the previous position to detect if the bullet is stuck
-        const hasMoved = this.lastX !== this.x || this.lastY !== this.y;
+        // const hasMoved = this.lastX !== this.x || this.lastY !== this.y;
         this.lastX = this.x;
         this.lastY = this.y;
     
@@ -88,16 +94,35 @@ class BasicBullet {
         enemies.forEach((enemy) => {
             const enemyCenterX = enemy.x + (this.enemySize - 10) / 2;
             const enemyCenterY = enemy.y + (this.enemySize - 10) / 2;
-    
+
             if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5 &&
                 !this.hitEnemies.has(enemy)) { // Only hit if not already hit
-                // Collision detected, apply damage
-                enemy.takeDamage(this.damage);
-                this.hitEnemies.add(enemy);  // Mark enemy as hit
-    
-                // Decrease pierce count
-                this.pierce--;
+
+                // Collision detected, apply damage, and add it to the total damage dealt by the tower
+                if (!(this.towerOfOrigin.armorPiercing === false && enemy.fortified === true)) {
+                    const hpOverflow = enemy.takeDamage(this.damage);
+                    console.log("hpOverflow: " + hpOverflow);
+                    if (hpOverflow != null) {
+                        if (hpOverflow <= 0) {
+                            console.log("damage + kill")
+                            this.towerOfOrigin.addDamageDealt(hpOverflow);
+                            if (!this.hitEnemies.has(enemy)) {
+                                this.towerOfOrigin.addEnemyKilled();
+                            }
+                        } else {
+                            console.log("damage");
+                            this.towerOfOrigin.addDamageDealt(0);
+                        }
+                    }
+
+                    this.hitEnemies.add(enemy);  // Mark enemy as hit
+
+                    // Decrease pierce count
+                    this.pierce--;
+                } else {
+                    this.pierce = 0;
+                }
     
                 if (this.pierce > 0) {
                     // Continue moving in the same direction, but further out
@@ -112,12 +137,6 @@ class BasicBullet {
                 }   
             }
         });
-    
-        // const currentTime = performance.now();
-        // if (currentTime - this.bulletFired >= 1000) {
-        //     this.x = -100;  // Mark the bullet for removal after 1 second
-        //     this.y = -100;
-        // }
     
         // Render the bullet
         this.render(ctx);
