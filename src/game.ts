@@ -156,11 +156,11 @@ minigunTowerText.innerText = 'Minigun\nTower';
 
 // Create images for the towers
 const singleShotTowerImg = document.createElement('img');
-singleShotTowerImg.src = '../towers/images/SST.jpg'; 
+singleShotTowerImg.src = '/towerImages/SST.jpg';
 singleShotTowerImg.alt = 'Single Shot Tower';
 
 const minigunTowerImg = document.createElement('img');
-minigunTowerImg.src = '../towers/images/MT.jpg'; 
+minigunTowerImg.src = '/towerImages/MT.jpg';
 minigunTowerImg.alt = 'Minigun Tower';
 
 // Create paragraph elements for the towers
