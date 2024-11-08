@@ -1,5 +1,23 @@
 # Changelog for Robkoo's Tower Defense
 
+## Alpha 0.3.1
+- Added proper prices to tower upgrades, making them tougher to aquire
+- Added a fortified enemy
+    - HP: 200
+    - Speed: 2x slower than normal enemy (0.25)
+    - Only damagable with AP bullets
+    - The enemy has a visible "armor" render
+- Renamed SST (Single Shot Tower) to Marksman Tower
+- Minor changes to how the map data is handled
+
+### Balance Changes
+- **Marksman Tower**    
+    - 2-x, 3-x, 4-x now have AP bullets
+
+### Bugfixes
+- Fixed armor rendering different color until a tower is placed
+- Fixed enemies' color not being calculated properly based on their specific health
+
 ## Alpha 0.3
 - Removed unnecesary console.log() commands
 - Added multiple upgrades, and simmilarly to BTD5, you can go up to 4 upgrades on one path and 2 on the other path.

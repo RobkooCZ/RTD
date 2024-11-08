@@ -21,11 +21,12 @@ class minigunTower extends Tower {
         pierce: number,
         name: string,
         UPGRADE_COSTS = {
-            PATH1: [1, 2, 3, 4], // Costs for Path 1
-            PATH2: [1, 2, 3, 4]  // Costs for Path 2
+            PATH1: [150, 750, 1500, 7500], // Costs for Path 1
+            PATH2: [100, 1000, 5000, 10000]  // Costs for Path 2
         },
         sellValue: number = 0,
         totalCost: number = 125,
+        armorPiercing: boolean = false,
     ) {
         // Call the parent constructor with specific values for MinigunTower
         super(100, 2, 10, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);

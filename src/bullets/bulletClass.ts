@@ -16,8 +16,9 @@ abstract class bullet {
     public bulletFired: number = 0;
     public bulletRender: boolean = true;
     public speed: number;
+    public armorPiercing: boolean;
 
-    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number, speed: number, towerOfOrigin: Tower) {
+    constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number, speed: number, towerOfOrigin: Tower, armorPiercing: boolean) {
         this.damage = damage;
         this.towerSize = towerSize;
         this.hitEnemies = new Set();
@@ -32,6 +33,7 @@ abstract class bullet {
         this.lastY = this.y;
         this.speed = speed;
         this.towerOfOrigin = towerOfOrigin;
+        this.armorPiercing = armorPiercing;
     }
 
     public setPosition(x: number, y: number): void {
@@ -92,26 +94,35 @@ abstract class bullet {
         enemies.forEach((enemy) => {
             const enemyCenterX = enemy.x + (this.enemySize - 10) / 2;
             const enemyCenterY = enemy.y + (this.enemySize - 10) / 2;
-    
+
             if (this.x >= enemyCenterX - 12.5 && this.x <= enemyCenterX + 12.5 &&
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5 &&
                 !this.hitEnemies.has(enemy)) { // Only hit if not already hit
 
                 // Collision detected, apply damage, and add it to the total damage dealt by the tower
-                hpOverflow =  enemy.takeDamage(this.damage);
-                if (hpOverflow != null){
-                    if (hpOverflow <= 0){
-                        this.towerOfOrigin.addDamageDealt(-hpOverflow);
-                        this.towerOfOrigin.addEnemyKilled();
+                if (!(this.towerOfOrigin.armorPiercing === false && enemy.fortified === true)) {
+                    const hpOverflow = enemy.takeDamage(this.damage);
+                    console.log("hpOverflow: " + hpOverflow);
+                    if (hpOverflow != null) {
+                        if (hpOverflow <= 0) {
+                            console.log("damage + kill")
+                            this.towerOfOrigin.addDamageDealt(hpOverflow);
+                            if (!this.hitEnemies.has(enemy)) {
+                                this.towerOfOrigin.addEnemyKilled();
+                            }
+                        } else {
+                            console.log("damage");
+                            this.towerOfOrigin.addDamageDealt(0);
+                        }
                     }
-                }else{
-                    this.towerOfOrigin.addDamageDealt(0);
-                }
 
-                this.hitEnemies.add(enemy);  // Mark enemy as hit
-    
-                // Decrease pierce count
-                this.pierce--;
+                    this.hitEnemies.add(enemy);  // Mark enemy as hit
+
+                    // Decrease pierce count
+                    this.pierce--;
+                } else {
+                    this.pierce = 0;
+                }
     
                 if (this.pierce > 0) {
                     // Continue moving in the same direction, but further out

@@ -13,7 +13,9 @@
  * 
 */
 
-class SingleShotTower extends Tower {
+/// <reference path="towerClass.ts"/>
+
+class MarksmanTower extends Tower {
     constructor(
         x: number, 
         y: number, 
@@ -22,11 +24,12 @@ class SingleShotTower extends Tower {
         pierce: number,
         name: string,
         UPGRADE_COSTS = {
-            PATH1: [10, 20, 30, 40], // Costs for Path 1
-            PATH2: [15, 25, 35, 45]  // Costs for Path 2
+            PATH1: [100, 500, 1000, 10000], // Costs for Path 1
+            PATH2: [150, 450, 750, 12500]  // Costs for Path 2
         },
         sellValue: number = 0,
         totalCost: number = 100,
+        armorPiercing: boolean = false,
     ) {
         // Call the parent constructor with correctly ordered values
         super(150, 5, 1, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
@@ -40,6 +43,7 @@ class SingleShotTower extends Tower {
         else if (this.path1Upgrades === 1) {
             this.damage += 2;
             this.pierce += 1;
+            this.armorPiercing = true;
         }
         else if (this.path1Upgrades === 2) {
             this.damage += 10;

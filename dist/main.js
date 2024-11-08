@@ -242,8 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedGamemode == "sandbox")
         h2Blue.innerText = `Press E to spawn enemies!`;
     h2Blue.style.fontSize = '3vh';
-    enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
-    enemyPaths.push(easyMapPath);
+    enemyPaths.push(returnBasicMapPath()); // add all enemy paths to an array for easy coding later
+    enemyPaths.push(returnEasyMapPath());
     enemyPaths.forEach(path => {
         path.forEach(point => {
             point.x = point.x / 50 * rectSize;
@@ -251,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     // Add maps to the array
-    maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
-    maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
+    maps.push(new gameMap(returnBasicMap(), enemyPaths[0], 'Basic Map'));
+    maps.push(new gameMap(returnEasyMap(), enemyPaths[1], 'Easy Map'));
     if (selectedMap === 'basicMap') {
         currentMapIndex = 0;
     }
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             updateStatistics();
                             let tower = null; // Initialize as null
                             if (pressedT) {
-                                tower = new SingleShotTower(snappedX, snappedY, false, rectSize, 5, "Single Shot Tower");
+                                tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
                             }
                             else if (pressedS) {
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wavesStart = true;
             }
             else if (selectedGamemode == "sandbox") {
-                spawnEnemy(); // Spawn a new enemy
+                spawnEnemy();
             }
         }
     });
@@ -507,14 +507,31 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMap(ctx, currentMap, towerArray, rectSize, towerSize); // Render the map initially
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
-        const rng = () => Math.floor(Math.random() * 2);
-        const randomValue = rng();
+        const rng = () => Math.floor(Math.random() * 10); // Random number between 0 and 9
         if (selectedMap === 'basicMap') {
-            const newEnemy = randomValue === 0 ? new NormalEnemy(0, 300 / 50 * rectSize, rectSize) : new FastEnemy(0, 300 / 50 * rectSize, rectSize);
+            const randomValue = rng(); // Get a random value for the spawn chance
+            let newEnemy;
+            if (randomValue === 0) {
+                // 1/10 chance for an ArmoredEnemy
+                newEnemy = new ArmoredEnemy(0, 300 / 50 * rectSize, rectSize);
+            }
+            else {
+                // 50% chance for either NormalEnemy or FastEnemy if it's not an ArmoredEnemy
+                newEnemy = (randomValue <= 5) ? new NormalEnemy(0, 300 / 50 * rectSize, rectSize) : new FastEnemy(0, 300 / 50 * rectSize, rectSize);
+            }
             enemies.push(newEnemy);
         }
         else if (selectedMap === 'easyMap') {
-            const newEnemy = randomValue === 0 ? new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize) : new FastEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
+            const randomValue = rng(); // Get a random value for the spawn chance
+            let newEnemy;
+            if (randomValue === 0) {
+                // 1/10 chance for a NormalEnemy
+                newEnemy = new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
+            }
+            else {
+                // 50/50 chance for either FastEnemy or NormalEnemy if it's not the ArmoredEnemy
+                newEnemy = (randomValue <= 5) ? new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize) : new FastEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
+            }
             enemies.push(newEnemy);
         }
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
@@ -623,8 +640,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
                                 // Depending on the tower type, assign the appropriate bullet to the shared 'bullet' variable
-                                if (tower.name === 'Single Shot Tower') {
-                                    tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower);
+                                if (tower.name === 'Marksman Tower') {
+                                    if (tower.path1Upgrades >= 2) {
+                                        tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower, true) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower, true);
+                                    }
+                                    else {
+                                        tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower, false) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower, false);
+                                    }
                                 }
                                 else if (tower.name === 'Minigun Tower') {
                                     bullet = new classicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 10, tower);
@@ -902,7 +924,8 @@ class bullet {
     bulletFired = 0;
     bulletRender = true;
     speed;
-    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
+    armorPiercing;
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin, armorPiercing) {
         this.damage = damage;
         this.towerSize = towerSize;
         this.hitEnemies = new Set();
@@ -917,6 +940,7 @@ class bullet {
         this.lastY = this.y;
         this.speed = speed;
         this.towerOfOrigin = towerOfOrigin;
+        this.armorPiercing = armorPiercing;
     }
     setPosition(x, y) {
         this.x = x;
@@ -972,19 +996,29 @@ class bullet {
                 this.y >= enemyCenterY - 12.5 && this.y <= enemyCenterY + 12.5 &&
                 !this.hitEnemies.has(enemy)) { // Only hit if not already hit
                 // Collision detected, apply damage, and add it to the total damage dealt by the tower
-                hpOverflow = enemy.takeDamage(this.damage);
-                if (hpOverflow != null) {
-                    if (hpOverflow <= 0) {
-                        this.towerOfOrigin.addDamageDealt(-hpOverflow);
-                        this.towerOfOrigin.addEnemyKilled();
+                if (!(this.towerOfOrigin.armorPiercing === false && enemy.fortified === true)) {
+                    const hpOverflow = enemy.takeDamage(this.damage);
+                    console.log("hpOverflow: " + hpOverflow);
+                    if (hpOverflow != null) {
+                        if (hpOverflow <= 0) {
+                            console.log("damage + kill");
+                            this.towerOfOrigin.addDamageDealt(hpOverflow);
+                            if (!this.hitEnemies.has(enemy)) {
+                                this.towerOfOrigin.addEnemyKilled();
+                            }
+                        }
+                        else {
+                            console.log("damage");
+                            this.towerOfOrigin.addDamageDealt(0);
+                        }
                     }
+                    this.hitEnemies.add(enemy); // Mark enemy as hit
+                    // Decrease pierce count
+                    this.pierce--;
                 }
                 else {
-                    this.towerOfOrigin.addDamageDealt(0);
+                    this.pierce = 0;
                 }
-                this.hitEnemies.add(enemy); // Mark enemy as hit
-                // Decrease pierce count
-                this.pierce--;
                 if (this.pierce > 0) {
                     // Continue moving in the same direction, but further out
                     const pierceDistance = 50; // Travel a bit beyond the enemy
@@ -1008,7 +1042,7 @@ class bullet {
 class classicBullet extends bullet {
     constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
         // Call the parent class constructor
-        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin);
+        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin, false);
     }
     render(ctx) {
         ctx.fillStyle = 'black'; // Set fill style for the bullet
@@ -1034,9 +1068,9 @@ class classicBullet extends bullet {
     }
 }
 class marksmanBullet extends bullet {
-    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin) {
+    constructor(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin, armorPiercing) {
         // Call the parent class constructor
-        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin);
+        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin, false);
     }
     render(ctx) {
         ctx.fillStyle = 'black'; // Set fill style for the bullet
@@ -1066,22 +1100,24 @@ class Enemy {
     y;
     speed;
     health;
-    size; // Size of the enemy
+    size;
     gridSize;
-    constructor(speed, x, y, health, size, gridSize) {
+    fortified;
+    maxHealth;
+    constructor(speed, x, y, health, size, gridSize, fortified, maxHealth) {
         this.speed = speed;
         this.x = x;
         this.y = y;
-        this.health = health; // Initialize health
-        this.size = size; // Initialize size
+        this.health = health;
+        this.size = size;
         this.gridSize = gridSize;
+        this.fortified = fortified;
+        this.maxHealth = maxHealth;
     }
     // Method to apply damage to the enemy
     takeDamage(amount) {
         this.health -= amount;
-        if (this.health <= 0) {
-            return this.health;
-        }
+        return this.health;
     }
     // Method to render the enemy on the canvas
     render(ctx, size) {
@@ -1103,17 +1139,82 @@ class Enemy {
         this.x = x;
         this.y = y;
     }
+    calculateHealthColor(health, maxHealth) {
+        const currentHealth = Math.max(0, health);
+        const red = Math.floor(255 * (1 - currentHealth / maxHealth)); // R component from 0 (black) to 255 (white)
+        const green = Math.floor(255 * (1 - currentHealth / maxHealth)); // G component from 0 (black) to 255 (white)
+        const blue = Math.floor(255 * (1 - currentHealth / maxHealth)); // B component from 0 (black) to 255 (white)
+        return [red, green, blue];
+    }
+}
+/// <reference path="enemyClass.ts"/> 
+class ArmoredEnemy extends Enemy {
+    constructor(x, y, gridSize) {
+        // NormalEnemy with standard speed, health, and size
+        super(0.25, x, y, 200, gridSize / 1.5, gridSize, true, 200); // speed, x, y, health, size, gridSize, fortified
+    }
+    render(ctx, size) {
+        // Calculate the color based on health
+        const colorsArray = this.calculateHealthColor(this.health, this.maxHealth);
+        const red = colorsArray[0];
+        const green = colorsArray[1];
+        const blue = colorsArray[2];
+        this.size = size; // Set the size of the enemy
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
+        ctx.beginPath();
+        // Center the enemy in the grid cell
+        let centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
+        let centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
+        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.beginPath();
+        centeredX = (this.x + (this.gridSize - this.size) / 2) - (this.size / 100) * 25;
+        centeredY = (this.y + (this.gridSize - this.size) / 2) - (this.size / 100) * 25;
+        ctx.rect(centeredX, centeredY, this.size * 1.5, this.size * 1.5); // Draw the enemy
+        ctx.stroke();
+    }
 }
 class FastEnemy extends Enemy {
     constructor(x, y, gridSize) {
         // NormalEnemy with standard speed, health, and size
-        super(1.5, x, y, 50, gridSize / 2, gridSize); // speed, x, y, health, size, gridSize
+        super(1.5, x, y, 50, gridSize / 2, gridSize, false, 50); // speed, x, y, health, size, gridSize, fortified
+    }
+    render(ctx, size) {
+        // Calculate the color based on health
+        const colorsArray = this.calculateHealthColor(this.health, this.maxHealth);
+        const red = colorsArray[0];
+        const green = colorsArray[1];
+        const blue = colorsArray[2];
+        this.size = size; // Set the size of the enemy
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
+        ctx.beginPath();
+        // Center the enemy in the grid cell
+        const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
+        const centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
+        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
+        ctx.fill();
     }
 }
 class NormalEnemy extends Enemy {
     constructor(x, y, gridSize) {
         // NormalEnemy with standard speed, health, and size
-        super(0.5, x, y, 100, gridSize / 2, gridSize); // speed, x, y, health, size, gridSize
+        super(0.5, x, y, 100, gridSize / 2, gridSize, false, 50); // speed, x, y, health, size, gridSize, fortified
+    }
+    render(ctx, size) {
+        // Calculate the color based on health
+        const colorsArray = this.calculateHealthColor(this.health, this.maxHealth);
+        const red = colorsArray[0];
+        const green = colorsArray[1];
+        const blue = colorsArray[2];
+        this.size = size; // Set the size of the enemy
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`; // Set fill style based on health
+        ctx.beginPath();
+        // Center the enemy in the grid cell
+        const centeredX = this.x + (this.gridSize - this.size) / 2; // Center it horizontally
+        const centeredY = this.y + (this.gridSize - this.size) / 2; // Center it vertically
+        ctx.rect(centeredX, centeredY, this.size, this.size); // Draw the enemy
+        ctx.fill();
     }
 }
 class gameMap {
@@ -1127,26 +1228,6 @@ class gameMap {
     }
 }
 /// <reference path="gameMap.ts" />
-let basicMap = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-];
 function returnBasicMap() {
     return [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1169,88 +1250,6 @@ function returnBasicMap() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
     ];
 }
-const basicMapPath = [
-    { x: 50, y: 300 }, //first straight 
-    { x: 100, y: 300 },
-    { x: 150, y: 300 },
-    { x: 200, y: 300 },
-    { x: 250, y: 300 },
-    { x: 300, y: 300 },
-    { x: 350, y: 300 },
-    { x: 400, y: 300 },
-    { x: 450, y: 300 },
-    { x: 450, y: 250 }, //straight up
-    { x: 450, y: 200 },
-    { x: 450, y: 150 },
-    { x: 450, y: 100 },
-    { x: 450, y: 50 },
-    { x: 400, y: 50 }, // straight left
-    { x: 350, y: 50 },
-    { x: 300, y: 50 },
-    { x: 250, y: 50 },
-    { x: 200, y: 50 },
-    { x: 200, y: 100 }, // straight down
-    { x: 200, y: 150 },
-    { x: 200, y: 200 },
-    { x: 200, y: 250 },
-    { x: 200, y: 300 },
-    { x: 200, y: 350 },
-    { x: 200, y: 400 },
-    { x: 200, y: 450 },
-    { x: 200, y: 500 },
-    { x: 200, y: 550 },
-    { x: 200, y: 600 },
-    { x: 200, y: 650 },
-    { x: 200, y: 700 },
-    { x: 200, y: 750 },
-    { x: 150, y: 750 }, // straight left
-    { x: 100, y: 750 },
-    { x: 50, y: 750 },
-    { x: 50, y: 700 }, // straight up
-    { x: 50, y: 650 },
-    { x: 50, y: 600 },
-    { x: 50, y: 550 },
-    { x: 100, y: 550 }, // straight right
-    { x: 150, y: 550 },
-    { x: 200, y: 550 },
-    { x: 250, y: 550 },
-    { x: 300, y: 550 },
-    { x: 350, y: 550 },
-    { x: 400, y: 550 },
-    { x: 450, y: 550 },
-    { x: 500, y: 550 },
-    { x: 550, y: 550 },
-    { x: 600, y: 550 },
-    { x: 650, y: 550 },
-    { x: 700, y: 550 },
-    { x: 750, y: 550 },
-    { x: 800, y: 550 },
-    { x: 850, y: 550 },
-    { x: 900, y: 550 },
-    { x: 950, y: 550 },
-    { x: 950, y: 500 }, // straight up
-    { x: 950, y: 450 },
-    { x: 950, y: 400 },
-    { x: 950, y: 350 },
-    { x: 950, y: 300 },
-    { x: 950, y: 250 },
-    { x: 1000, y: 250 }, // straight right
-    { x: 1050, y: 250 },
-    { x: 1100, y: 250 },
-    { x: 1150, y: 250 },
-    { x: 1150, y: 300 }, // straight down
-    { x: 1150, y: 350 },
-    { x: 1150, y: 400 },
-    { x: 1150, y: 450 },
-    { x: 1150, y: 500 },
-    { x: 1150, y: 550 },
-    { x: 1150, y: 600 },
-    { x: 1150, y: 650 },
-    { x: 1150, y: 700 },
-    { x: 1150, y: 750 },
-    { x: 1150, y: 800 },
-    { x: 1150, y: 850 },
-];
 function returnBasicMapPath() {
     return [
         { x: 50, y: 300 }, //first straight 
@@ -1335,18 +1334,6 @@ function returnBasicMapPath() {
         { x: 1150, y: 850 },
     ];
 }
-const easyMap = [
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    [0, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-];
 function returnEasyMap() {
     return [
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
@@ -1362,32 +1349,34 @@ function returnEasyMap() {
     ];
 }
 ;
-const easyMapPath = [
-    { x: 350, y: 450 },
-    { x: 350, y: 400 },
-    { x: 350, y: 350 },
-    { x: 350, y: 300 },
-    { x: 350, y: 250 },
-    { x: 350, y: 200 },
-    { x: 300, y: 200 },
-    { x: 250, y: 200 },
-    { x: 200, y: 200 },
-    { x: 150, y: 200 },
-    { x: 100, y: 200 },
-    { x: 100, y: 250 },
-    { x: 100, y: 300 },
-    { x: 100, y: 350 },
-    { x: 150, y: 350 },
-    { x: 200, y: 350 },
-    { x: 250, y: 350 },
-    { x: 250, y: 300 },
-    { x: 250, y: 250 },
-    { x: 250, y: 200 },
-    { x: 250, y: 150 },
-    { x: 250, y: 100 },
-    { x: 250, y: 50 },
-    { x: 250, y: 0 },
-];
+function returnEasyMapPath() {
+    return [
+        { x: 350, y: 450 },
+        { x: 350, y: 400 },
+        { x: 350, y: 350 },
+        { x: 350, y: 300 },
+        { x: 350, y: 250 },
+        { x: 350, y: 200 },
+        { x: 300, y: 200 },
+        { x: 250, y: 200 },
+        { x: 200, y: 200 },
+        { x: 150, y: 200 },
+        { x: 100, y: 200 },
+        { x: 100, y: 250 },
+        { x: 100, y: 300 },
+        { x: 100, y: 350 },
+        { x: 150, y: 350 },
+        { x: 200, y: 350 },
+        { x: 250, y: 350 },
+        { x: 250, y: 300 },
+        { x: 250, y: 250 },
+        { x: 250, y: 200 },
+        { x: 250, y: 150 },
+        { x: 250, y: 100 },
+        { x: 250, y: 50 },
+        { x: 250, y: 0 },
+    ];
+}
 class Tower {
     range;
     damage;
@@ -1414,6 +1403,7 @@ class Tower {
     totalCost = 0;
     damageDealt = 0;
     enemiesKilled = 0;
+    armorPiercing = false;
     constructor(range, damage, fireRate, x, y, cost, size, isClicked, pierce, name, UPGRADE_COSTS, sellValue = cost, totalCost = cost) {
         this.range = range;
         this.damage = damage;
@@ -1450,7 +1440,6 @@ class Tower {
         this.calculateSellValue();
     }
     sellTower(gameCash, tower, towerArray, sellValue) {
-        console.log("Selling tower for: " + sellValue);
         gameCash += sellValue;
         towerArray.splice(towerArray.indexOf(tower), 1);
         return gameCash;
@@ -1520,11 +1509,167 @@ class Tower {
     }
     addDamageDealt(substract) {
         this.damageDealt += this.damage - substract;
-        console.log("Damage dealt: " + this.damageDealt);
     }
     addEnemyKilled() {
         this.enemiesKilled++;
-        console.log("Enemies killed: " + this.enemiesKilled);
+    }
+}
+/**
+ * Represents a Single Shot Tower in the game.
+ *
+ * @extends Tower
+ *
+ * @param {number} x - The x-coordinate of the tower's position.
+ * @param {number} y - The y-coordinate of the tower's position.
+ * @param {boolean} isClicked - Indicates whether the tower is clicked.
+ * @param {number} gridSize - The size of the grid the tower resides in.
+ * @param {number} pierce - The pierce value for this tower.
+ * @param {number} gridX - The grid X-coordinate of the tower.
+ * @param {number} gridY - The grid Y-coordinate of the tower.
+ *
+*/
+/// <reference path="towerClass.ts"/>
+class MarksmanTower extends Tower {
+    constructor(x, y, isClicked, gridSize, pierce, name, UPGRADE_COSTS = {
+        PATH1: [100, 500, 1000, 10000], // Costs for Path 1
+        PATH2: [150, 450, 750, 12500] // Costs for Path 2
+    }, sellValue = 0, totalCost = 100, armorPiercing = false) {
+        // Call the parent constructor with correctly ordered values
+        super(150, 5, 1, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
+    }
+    upgradePath1() {
+        if (this.path1Upgrades === 0) {
+            this.damage += 3;
+            this.pierce += 1;
+        }
+        else if (this.path1Upgrades === 1) {
+            this.damage += 2;
+            this.pierce += 1;
+            this.armorPiercing = true;
+        }
+        else if (this.path1Upgrades === 2) {
+            this.damage += 10;
+            this.pierce += 2;
+        }
+        else if (this.path1Upgrades === 3) {
+            this.damage += 15;
+            this.pierce += 2;
+        }
+        this.path1Upgrades++;
+    }
+    upgradePath2() {
+        if (this.path2Upgrades === 0) {
+            this.fireRate += 0.5;
+            this.range += 50;
+        }
+        else if (this.path2Upgrades === 1) {
+            this.fireRate += 0.5;
+            this.range += 50;
+        }
+        else if (this.path2Upgrades === 2) {
+            this.fireRate += 3;
+        }
+        else if (this.path2Upgrades === 3) {
+            this.fireRate += 5;
+        }
+        this.path2Upgrades++;
+    }
+    render(ctx, size, x, y) {
+        this.size = size; // Set the size of the tower
+        this.x = x;
+        this.y = y;
+        // Draw the base color (entire area)
+        ctx.fillStyle = this.towerColor; // Use the normal tower color
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.size, this.size);
+        ctx.fill();
+        // Draw the border around the tower
+        if (this.path1Upgrades === 1) {
+            ctx.strokeStyle = 'red'; // Set color for the border
+        }
+        else if (this.path1Upgrades === 2) {
+            ctx.strokeStyle = 'purple'; // Set color for the border
+        }
+        else if (this.path1Upgrades === 3) {
+            ctx.strokeStyle = 'blue'; // Set color for the border
+        }
+        else if (this.path1Upgrades === 4) {
+            ctx.strokeStyle = 'green'; // Set color for the border
+        }
+        else {
+            ctx.strokeStyle = 'white'; // Set color for the border
+        }
+        ctx.lineWidth = 2; // Set line width for the border
+        const borderOffset = 4; // Offset for the border
+        ctx.beginPath();
+        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
+        this.y + borderOffset / 2, // Draw border starting y
+        this.size - borderOffset, // Adjust width for the border
+        this.size - borderOffset);
+        ctx.stroke();
+        // Draw the clicked area precisely within the border
+        if (this.isClicked) {
+            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
+            ctx.beginPath();
+            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
+            this.y + 2, // Start filling exactly at the inner edge of the border
+            this.size - 4, // Fill area should be the same size as the inner border
+            this.size - 4 // Fill area should be the same size as the inner border
+            );
+            ctx.fill(); // Fill the area precisely aligned with the border
+        }
+        // Draw a small white square in the center of the fill
+        const smallSquareSize = 5; // Size of the small white square
+        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
+        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
+        if (this.path2Upgrades === 1) {
+            ctx.fillStyle = 'red'; // Set color
+        }
+        else if (this.path2Upgrades === 2) {
+            ctx.fillStyle = 'purple'; // Set color
+        }
+        else if (this.path2Upgrades === 3) {
+            ctx.fillStyle = 'blue'; // Set color
+        }
+        else if (this.path2Upgrades === 4) {
+            ctx.fillStyle = 'green'; // Set color
+        }
+        else {
+            ctx.fillStyle = 'white'; // Set color
+        }
+        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
+    }
+    renderRange(ctx) {
+        // Draw the range of the tower with filling
+        if (this.isClicked) {
+            // Set the range color based on upgrades
+            let rangeColor;
+            if (this.path1Upgrades === 1) {
+                rangeColor = 'pink'; // Set color for the border
+            }
+            else if (this.path1Upgrades === 2) {
+                rangeColor = 'violet'; // Set color for the border
+            }
+            else if (this.path1Upgrades === 3) {
+                rangeColor = 'lightblue'; // Set color for the border
+            }
+            else if (this.path1Upgrades === 4) {
+                rangeColor = 'lightgreen'; // Set color for the border
+            }
+            else {
+                rangeColor = 'white'; // Set color for the border
+            }
+            ctx.fillStyle = rangeColor; // Set the fill style to the range color
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.globalAlpha = 0.3; // Set opacity for the filling
+            ctx.fill(); // Fill the range area with the semi-transparent color
+            ctx.globalAlpha = 1; // Reset opacity for further drawings
+            ctx.strokeStyle = rangeColor; // Use the same color for the border
+            ctx.beginPath();
+            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
+            ctx.stroke(); // Draw the range outline
+        }
     }
 }
 /**
@@ -1542,9 +1687,9 @@ class Tower {
 /// <reference path="towerClass.ts"/>
 class minigunTower extends Tower {
     constructor(x, y, isClicked, gridSize, pierce, name, UPGRADE_COSTS = {
-        PATH1: [1, 2, 3, 4], // Costs for Path 1
-        PATH2: [1, 2, 3, 4] // Costs for Path 2
-    }, sellValue = 0, totalCost = 125) {
+        PATH1: [150, 750, 1500, 7500], // Costs for Path 1
+        PATH2: [100, 1000, 5000, 10000] // Costs for Path 2
+    }, sellValue = 0, totalCost = 125, armorPiercing = false) {
         // Call the parent constructor with specific values for MinigunTower
         super(100, 2, 10, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
     }
@@ -1678,161 +1823,5 @@ class minigunTower extends Tower {
             this.fireRate += 5;
         }
         this.path2Upgrades++;
-    }
-}
-/**
- * Represents a Single Shot Tower in the game.
- *
- * @extends Tower
- *
- * @param {number} x - The x-coordinate of the tower's position.
- * @param {number} y - The y-coordinate of the tower's position.
- * @param {boolean} isClicked - Indicates whether the tower is clicked.
- * @param {number} gridSize - The size of the grid the tower resides in.
- * @param {number} pierce - The pierce value for this tower.
- * @param {number} gridX - The grid X-coordinate of the tower.
- * @param {number} gridY - The grid Y-coordinate of the tower.
- *
-*/
-class SingleShotTower extends Tower {
-    constructor(x, y, isClicked, gridSize, pierce, name, UPGRADE_COSTS = {
-        PATH1: [10, 20, 30, 40], // Costs for Path 1
-        PATH2: [15, 25, 35, 45] // Costs for Path 2
-    }, sellValue = 0, totalCost = 100) {
-        // Call the parent constructor with correctly ordered values
-        super(150, 5, 1, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
-    }
-    upgradePath1() {
-        if (this.path1Upgrades === 0) {
-            this.damage += 3;
-            this.pierce += 1;
-        }
-        else if (this.path1Upgrades === 1) {
-            this.damage += 2;
-            this.pierce += 1;
-        }
-        else if (this.path1Upgrades === 2) {
-            this.damage += 10;
-            this.pierce += 2;
-        }
-        else if (this.path1Upgrades === 3) {
-            this.damage += 15;
-            this.pierce += 2;
-        }
-        this.path1Upgrades++;
-    }
-    upgradePath2() {
-        if (this.path2Upgrades === 0) {
-            this.fireRate += 0.5;
-            this.range += 50;
-        }
-        else if (this.path2Upgrades === 1) {
-            this.fireRate += 0.5;
-            this.range += 50;
-        }
-        else if (this.path2Upgrades === 2) {
-            this.fireRate += 3;
-        }
-        else if (this.path2Upgrades === 3) {
-            this.fireRate += 5;
-        }
-        this.path2Upgrades++;
-    }
-    render(ctx, size, x, y) {
-        this.size = size; // Set the size of the tower
-        this.x = x;
-        this.y = y;
-        // Draw the base color (entire area)
-        ctx.fillStyle = this.towerColor; // Use the normal tower color
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.size, this.size);
-        ctx.fill();
-        // Draw the border around the tower
-        if (this.path1Upgrades === 1) {
-            ctx.strokeStyle = 'red'; // Set color for the border
-        }
-        else if (this.path1Upgrades === 2) {
-            ctx.strokeStyle = 'purple'; // Set color for the border
-        }
-        else if (this.path1Upgrades === 3) {
-            ctx.strokeStyle = 'blue'; // Set color for the border
-        }
-        else if (this.path1Upgrades === 4) {
-            ctx.strokeStyle = 'green'; // Set color for the border
-        }
-        else {
-            ctx.strokeStyle = 'white'; // Set color for the border
-        }
-        ctx.lineWidth = 2; // Set line width for the border
-        const borderOffset = 4; // Offset for the border
-        ctx.beginPath();
-        ctx.rect(this.x + borderOffset / 2, // Draw border starting x
-        this.y + borderOffset / 2, // Draw border starting y
-        this.size - borderOffset, // Adjust width for the border
-        this.size - borderOffset);
-        ctx.stroke();
-        // Draw the clicked area precisely within the border
-        if (this.isClicked) {
-            ctx.fillStyle = this.towerColorWhenClicked; // Use the clicked color
-            ctx.beginPath();
-            ctx.rect(this.x + 2, // Start filling exactly at the inner edge of the border
-            this.y + 2, // Start filling exactly at the inner edge of the border
-            this.size - 4, // Fill area should be the same size as the inner border
-            this.size - 4 // Fill area should be the same size as the inner border
-            );
-            ctx.fill(); // Fill the area precisely aligned with the border
-        }
-        // Draw a small white square in the center of the fill
-        const smallSquareSize = 5; // Size of the small white square
-        const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
-        const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
-        if (this.path2Upgrades === 1) {
-            ctx.fillStyle = 'red'; // Set color
-        }
-        else if (this.path2Upgrades === 2) {
-            ctx.fillStyle = 'purple'; // Set color
-        }
-        else if (this.path2Upgrades === 3) {
-            ctx.fillStyle = 'blue'; // Set color
-        }
-        else if (this.path2Upgrades === 4) {
-            ctx.fillStyle = 'green'; // Set color
-        }
-        else {
-            ctx.fillStyle = 'white'; // Set color
-        }
-        ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square
-    }
-    renderRange(ctx) {
-        // Draw the range of the tower with filling
-        if (this.isClicked) {
-            // Set the range color based on upgrades
-            let rangeColor;
-            if (this.path1Upgrades === 1) {
-                rangeColor = 'pink'; // Set color for the border
-            }
-            else if (this.path1Upgrades === 2) {
-                rangeColor = 'violet'; // Set color for the border
-            }
-            else if (this.path1Upgrades === 3) {
-                rangeColor = 'lightblue'; // Set color for the border
-            }
-            else if (this.path1Upgrades === 4) {
-                rangeColor = 'lightgreen'; // Set color for the border
-            }
-            else {
-                rangeColor = 'white'; // Set color for the border
-            }
-            ctx.fillStyle = rangeColor; // Set the fill style to the range color
-            ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-            ctx.globalAlpha = 0.3; // Set opacity for the filling
-            ctx.fill(); // Fill the range area with the semi-transparent color
-            ctx.globalAlpha = 1; // Reset opacity for further drawings
-            ctx.strokeStyle = rangeColor; // Use the same color for the border
-            ctx.beginPath();
-            ctx.arc(this.x + this.size / 2, this.y + this.size / 2, this.range, 0, 2 * Math.PI);
-            ctx.stroke(); // Draw the range outline
-        }
     }
 }

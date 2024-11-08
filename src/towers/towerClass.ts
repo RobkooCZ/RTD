@@ -24,6 +24,7 @@ abstract class Tower {
     public totalCost: number = 0;
     public damageDealt: number = 0;
     public enemiesKilled: number = 0;
+    public armorPiercing: boolean = false;
 
     constructor(
         range: number, 
@@ -81,7 +82,6 @@ abstract class Tower {
     }
 
     public sellTower(gameCash: number, tower: Tower, towerArray: Tower[], sellValue: number): number {
-        console.log("Selling tower for: " + sellValue);
         gameCash += sellValue;
         towerArray.splice(towerArray.indexOf(tower), 1);
         return gameCash;
@@ -166,11 +166,9 @@ abstract class Tower {
 
     public addDamageDealt(substract: number): void {
         this.damageDealt += this.damage - substract;
-        console.log("Damage dealt: " + this.damageDealt);
     }
-
+    
     public addEnemyKilled(): void {
         this.enemiesKilled++;
-        console.log("Enemies killed: " + this.enemiesKilled);
     }
 }

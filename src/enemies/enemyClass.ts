@@ -3,24 +3,26 @@ abstract class Enemy {
     public y: number;
     public speed: number;
     public health: number;
-    private size: number; // Size of the enemy
-    private gridSize: number;
+    public size: number; 
+    public gridSize: number;
+    public fortified: boolean;
+    public maxHealth: number;
 
-    constructor(speed: number, x: number, y: number, health: number, size: number, gridSize: number) {
+    constructor(speed: number, x: number, y: number, health: number, size: number, gridSize: number, fortified: boolean, maxHealth: number) {
         this.speed = speed;
         this.x = x;
         this.y = y;
-        this.health = health; // Initialize health
-        this.size = size; // Initialize size
+        this.health = health; 
+        this.size = size; 
         this.gridSize = gridSize;
+        this.fortified = fortified;
+        this.maxHealth = maxHealth;
     }
 
     // Method to apply damage to the enemy
     public takeDamage(amount: number) {
         this.health -= amount;
-        if (this.health <= 0) {
-            return this.health;
-        }
+        return this.health;
     }
 
     // Method to render the enemy on the canvas
@@ -46,5 +48,14 @@ abstract class Enemy {
     public setPosition(x: number, y: number) {
         this.x = x;
         this.y = y;
+    }
+
+    public calculateHealthColor(health: number, maxHealth: number){
+        const currentHealth = Math.max(0, health);
+        const red = Math.floor(255 * (1 - currentHealth / maxHealth));   // R component from 0 (black) to 255 (white)
+        const green = Math.floor(255 * (1 - currentHealth / maxHealth)); // G component from 0 (black) to 255 (white)
+        const blue = Math.floor(255 * (1 - currentHealth / maxHealth));  // B component from 0 (black) to 255 (white)
+        
+        return [red, green, blue];
     }
 }

@@ -279,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(selectedGamemode == "sandbox")h2Blue.innerText = `Press E to spawn enemies!`; h2Blue.style.fontSize = '3vh';
 
-    enemyPaths.push(basicMapPath); // add all enemy paths to an array for easy coding later
-    enemyPaths.push(easyMapPath);
+    enemyPaths.push(returnBasicMapPath()); // add all enemy paths to an array for easy coding later
+    enemyPaths.push(returnEasyMapPath());
 
     enemyPaths.forEach(path => { // loops to modify x and y coordinates for enemy paths according to the resolution
         path.forEach(point => {
@@ -290,8 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add maps to the array
-    maps.push(new gameMap(basicMap, basicMapPath, 'Basic Map'));
-    maps.push(new gameMap(easyMap, easyMapPath, 'Easy Map'));
+    maps.push(new gameMap(returnBasicMap(), enemyPaths[0], 'Basic Map'));
+    maps.push(new gameMap(returnEasyMap(), enemyPaths[1], 'Easy Map'));
 
     if (selectedMap === 'basicMap') {
         currentMapIndex = 0;
@@ -349,33 +349,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         gameCash -= towerCost;
                         updateStatistics();
 
-                            let tower: Tower | null = null; // Initialize as null
+                        let tower: Tower | null = null; // Initialize as null
 
-
-                            if (pressedT) {
-                                tower = new SingleShotTower(snappedX, snappedY, false, rectSize, 5, "Single Shot Tower");
-                                tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                            } else if (pressedS) {
-                                tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
-                                tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                            }
-                            
-                            
-
-                            // Ensure tower is assigned before pushing or rendering
-                            if (tower) {
-                                towerArray.push(tower);
-                            }
-                        } else {
-                            console.log('Tower not placed: A tower already exists at this position.');
+                        if (pressedT) {
+                            tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
+                            tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                        } else if (pressedS) {
+                            tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
+                            tower.setPositionInGrid(snappedX, snappedY, rectSize); 
                         }
+
+                    // Ensure tower is assigned before pushing or rendering
+                    if (tower) {
+                        towerArray.push(tower);
+                    }
                     } else {
-                        console.log('Tower not placed: Invalid position (path)');
+                        console.log('Tower not placed: A tower already exists at this position.');
                     }
                 } else {
-                    console.log('Tower not placed: Out of map bounds');
+                    console.log('Tower not placed: Invalid position (path)');
                 }
+            } else {
+                console.log('Tower not placed: Out of map bounds');
             }
+        }
         }
     });
 
@@ -415,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wavesStart = true;
             }
             else if (selectedGamemode == "sandbox"){
-                spawnEnemy(); // Spawn a new enemy
+                spawnEnemy();
             }
         }
     });
@@ -592,17 +589,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function spawnEnemy() {
         // Create a new enemy at the start position and push it into the enemies array
-        const rng = () => Math.floor(Math.random() * 2);
-        const randomValue = rng();
-        
+        const rng = () => Math.floor(Math.random() * 10);  // Random number between 0 and 9
+    
         if (selectedMap === 'basicMap') {
-            const newEnemy = randomValue === 0 ? new NormalEnemy(0, 300/50 * rectSize, rectSize) : new FastEnemy(0, 300/50 * rectSize, rectSize);
+            const randomValue = rng();  // Get a random value for the spawn chance
+            
+            let newEnemy;
+            if (randomValue === 0) {
+                // 1/10 chance for an ArmoredEnemy
+                newEnemy = new ArmoredEnemy(0, 300 / 50 * rectSize, rectSize);
+            } else {
+                // 50% chance for either NormalEnemy or FastEnemy if it's not an ArmoredEnemy
+                newEnemy = (randomValue <= 5) ? new NormalEnemy(0, 300 / 50 * rectSize, rectSize) : new FastEnemy(0, 300 / 50 * rectSize, rectSize);
+            }
+    
+            enemies.push(newEnemy);
+        } else if (selectedMap === 'easyMap') {
+            const randomValue = rng();  // Get a random value for the spawn chance
+    
+            let newEnemy;
+            if (randomValue === 0) {
+                // 1/10 chance for a NormalEnemy
+                newEnemy = new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
+            } else {
+                // 50/50 chance for either FastEnemy or NormalEnemy if it's not the ArmoredEnemy
+                newEnemy = (randomValue <= 5) ? new NormalEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize) : new FastEnemy(350 / 50 * rectSize, 500 / 50 * rectSize, rectSize);
+            }
+    
             enemies.push(newEnemy);
         }
-        else if (selectedMap === 'easyMap') {
-            const newEnemy = randomValue === 0 ? new NormalEnemy(350/50 * rectSize, 500/50 * rectSize, rectSize) : new FastEnemy(350/50 * rectSize, 500/50 * rectSize, rectSize);
-            enemies.push(newEnemy);
-        }
+    
         currentPathIndex.push(0); // Start at the beginning of the path for this enemy
     }
 
@@ -732,8 +748,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Check if enough time has passed since the last shot
                             if (currentTime - tower.lastFired >= (1000 / tower.fireRate)) {
                                 // Depending on the tower type, assign the appropriate bullet to the shared 'bullet' variable
-                                if (tower.name === 'Single Shot Tower') {
-                                    tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower);
+                                if (tower.name === 'Marksman Tower') {
+                                    if (tower.path1Upgrades >= 2){
+                                        tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower, true) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower, true);
+                                    }else{
+                                        tower.path2Upgrades >= 2 ? bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 30, tower, false) : bullet = new marksmanBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 15, tower, false);
+                                    }
                                 }
                                 else if (tower.name === 'Minigun Tower') {
                                     bullet = new classicBullet(tower.damage, tower.x, tower.y, enemyPositionX, enemyPositionY, towerSize, enemySize, tower.path2Upgrades, tower.pierce, 10, tower);
@@ -782,4 +802,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start the game loop
     if(ctx)  renderMap(ctx, currentMap, towerArray, rectSize, towerSize);
     requestAnimationFrame(gameLoop); // Start the animation
-});
+}); 

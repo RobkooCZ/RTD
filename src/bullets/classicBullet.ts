@@ -1,7 +1,7 @@
 class classicBullet extends bullet {
     constructor(damage: number, towerX: number, towerY: number, enemyX: number, enemyY: number, towerSize: number, enemySize: number, towerUpgrade: number, pierce: number, speed: number, towerOfOrigin: Tower) {
         // Call the parent class constructor
-        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin);
+        super(damage, towerX, towerY, enemyX, enemyY, towerSize, enemySize, towerUpgrade, pierce, speed, towerOfOrigin, false);
     }
 
 
