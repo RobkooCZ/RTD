@@ -230,12 +230,15 @@ settingsIcon.addEventListener('click', () => {
     settingsModal.classList.add('active');
 });
 
-
+// declare functions from other stuff for server communication
+declare function sendTowerDataToServer(x: number, y: number, towerType: string): void;
+declare function acceptData(): { x: number, y: number, towerType: string };
 
 document.addEventListener('DOMContentLoaded', () => {
     let rectSize: number = 50; // Size of each grid cell, this is the default
     let towerSize: number = 50; // Size of each tower, this is the default
     let enemySize: number = 25; // Size of each enemy, this is the default
+    let incomingTowerData: { x: number, y: number, towerType: string };
     
     /**
      * Rounds a given value to the nearest multiple of the specified average.
@@ -359,9 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (pressedT) {
                             tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
                             tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                            sendTowerDataToServer(snappedX, snappedY, "Marksman Tower");
                         } else if (pressedS) {
                             tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
                             tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                            sendTowerDataToServer(snappedX, snappedY, "Minigun Tower");
                         }
 
                     // Ensure tower is assigned before pushing or rendering
@@ -381,7 +386,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
+    function placeIncomingTower(x: number, y: number, grid: number[][], towerType: string): void {
+        if (towerType === "Marksman Tower") {
+            let tower = new MarksmanTower(x, y, false, rectSize, 5, "Marksman Tower");
+            tower.setPositionInGrid(x, y, rectSize);
+            grid[y][x] = 2;
+            towerArray.push(tower);
+        } else if (towerType === "Minigun Tower") {
+            let tower = new minigunTower(x, y, false, rectSize, 2, "Minigun Tower");
+            tower.setPositionInGrid(x, y, rectSize);
+            grid[y][x] = 3;
+            towerArray.push(tower);
+        }
+        // towerArray.forEach(tower => {
+        //     tower.render(ctx, towerSize);
+        // });
+    }
 
     // toggle to reset the game
     document.addEventListener('keydown', (event) => {
@@ -643,6 +663,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
+            // incomingTowerData = acceptData(); // accept data from the server
+            // console.log(incomingTowerData);
+            // if (incomingTowerData){
+            //     placeIncomingTower(incomingTowerData.x, incomingTowerData.y, currentMap, incomingTowerData.towerType); // place the incoming tower
+            // }
+
             if (wavesStart) {
                 let enemyWavesIndex = 0; // First wave
                 

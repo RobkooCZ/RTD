@@ -4,15 +4,15 @@
   "description": "A website game made primarily using Typescript. I made it to practice my programming skills and to have fun while coding a simple TD game.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon server/server.js"
+    "dev": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

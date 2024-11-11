@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let rectSize = 50; // Size of each grid cell, this is the default
     let towerSize = 50; // Size of each tower, this is the default
     let enemySize = 25; // Size of each enemy, this is the default
+    let incomingTowerData;
     /**
      * Rounds a given value to the nearest multiple of the specified average.
      *
@@ -308,10 +309,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (pressedT) {
                                 tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
+                                sendTowerDataToServer(snappedX, snappedY, "Marksman Tower");
                             }
                             else if (pressedS) {
                                 tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
+                                sendTowerDataToServer(snappedX, snappedY, "Minigun Tower");
                             }
                             // Ensure tower is assigned before pushing or rendering
                             if (tower) {
@@ -332,6 +335,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    function placeIncomingTower(x, y, grid, towerType) {
+        if (towerType === "Marksman Tower") {
+            let tower = new MarksmanTower(x, y, false, rectSize, 5, "Marksman Tower");
+            tower.setPositionInGrid(x, y, rectSize);
+            grid[y][x] = 2;
+            towerArray.push(tower);
+        }
+        else if (towerType === "Minigun Tower") {
+            let tower = new minigunTower(x, y, false, rectSize, 2, "Minigun Tower");
+            tower.setPositionInGrid(x, y, rectSize);
+            grid[y][x] = 3;
+            towerArray.push(tower);
+        }
+        // towerArray.forEach(tower => {
+        //     tower.render(ctx, towerSize);
+        // });
+    }
     // toggle to reset the game
     document.addEventListener('keydown', (event) => {
         if (event.key === 'r' || event.key === 'R') {
@@ -556,6 +576,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     sellButton.innerHTML = `Sell Tower for $${tower.sellValue}`;
                 }
             });
+            // incomingTowerData = acceptData(); // accept data from the server
+            // console.log(incomingTowerData);
+            // if (incomingTowerData){
+            //     placeIncomingTower(incomingTowerData.x, incomingTowerData.y, currentMap, incomingTowerData.towerType); // place the incoming tower
+            // }
             if (wavesStart) {
                 let enemyWavesIndex = 0; // First wave
                 const spawnNextWave = () => {

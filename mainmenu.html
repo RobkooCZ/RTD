@@ -52,5 +52,13 @@
             <button class="backButton buttons">Back</button>
         </div>
     </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+    </script>
 </body>
 </html>
