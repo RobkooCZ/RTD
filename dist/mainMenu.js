@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             userGamemodeChoice.classList.remove('active');
             menuStage == 0;
-            window.location.href = 'src/public/index.html';
+            window.location.href = '/html/index.html';
         }
     });
 

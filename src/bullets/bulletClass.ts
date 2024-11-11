@@ -102,16 +102,13 @@ abstract class bullet {
                 // Collision detected, apply damage, and add it to the total damage dealt by the tower
                 if (!(this.towerOfOrigin.armorPiercing === false && enemy.fortified === true)) {
                     const hpOverflow = enemy.takeDamage(this.damage);
-                    console.log("hpOverflow: " + hpOverflow);
                     if (hpOverflow != null) {
                         if (hpOverflow <= 0) {
-                            console.log("damage + kill")
                             this.towerOfOrigin.addDamageDealt(hpOverflow);
                             if (!this.hitEnemies.has(enemy)) {
                                 this.towerOfOrigin.addEnemyKilled();
                             }
                         } else {
-                            console.log("damage");
                             this.towerOfOrigin.addDamageDealt(0);
                         }
                     }

@@ -32,7 +32,7 @@ class MarksmanTower extends Tower {
         armorPiercing: boolean = false,
     ) {
         // Call the parent constructor with correctly ordered values
-        super(150, 5, 1, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
+        super(150, 5, 1000, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
     }
 
     public override upgradePath1(): void {

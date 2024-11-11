@@ -1,203 +1,9 @@
 "use strict";
-/**
- * Initializes the game by setting up the canvas, game statistics, and UI elements.
- * Handles game events such as spawning towers, resetting the game, and starting waves.
- * Manages the game loop, rendering, and enemy movement.
- *
- * @file /c:/Coding/RTD/src/game.ts
- *
- * @constant {HTMLCanvasElement} canvas - The canvas element for rendering the game map.
- * @constant {HTMLDivElement} gameStats - The container for displaying game statistics.
- * @constant {HTMLDivElement} bottomContainer - The container for bottom UI elements.
- * @constant {HTMLDivElement} rightContainer - The container for right-side UI elements.
- * @constant {HTMLHeadingElement} h2Red - The H2 element for displaying game health.
- * @constant {HTMLHeadingElement} h2Green - The H2 element for displaying game cash.
- * @constant {HTMLHeadingElement} h2Blue - The H2 element for displaying game instructions.
- * @constant {HTMLDivElement} towerDiv - The container for displaying tower information.
- * @constant {HTMLDivElement} singleShotTowerDiv - The container for single shot tower information.
- * @constant {HTMLDivElement} minigunTowerDiv - The container for minigun tower information.
- * @constant {HTMLHeadingElement} singleShotTowerText - The text element for single shot tower.
- * @constant {HTMLHeadingElement} minigunTowerText - The text element for minigun tower.
- * @constant {HTMLImageElement} singleShotTowerImg - The image element for single shot tower.
- * @constant {HTMLImageElement} minigunTowerImg - The image element for minigun tower.
- * @constant {HTMLParagraphElement} singleShotTowerHotkey - The hotkey information for single shot tower.
- * @constant {HTMLParagraphElement} minigunTowerHotkey - The hotkey information for minigun tower.
- * @constant {HTMLParagraphElement} singleShotTowerCost - The cost information for single shot tower.
- * @constant {HTMLParagraphElement} minigunTowerCost - The cost information for minigun tower.
- * @constant {HTMLButtonElement} sellButton - The button for selling towers.
- * @constant {HTMLDivElement} towerStatisticsContainer - The container for displaying tower statistics.
- * @constant {HTMLHeadingElement} towerDamage - The element for displaying tower damage.
- * @constant {HTMLHeadingElement} towerKills - The element for displaying tower kills.
- * @constant {HTMLButtonElement} backToMainMenu - The button for navigating back to the main menu.
- * @constant {HTMLElement} xButton - The button for closing the settings modal.
- * @constant {HTMLElement} settingsModal - The modal for game settings.
- * @constant {HTMLElement} settingsIcon - The icon for opening the settings modal.
- * @constant {HTMLDivElement} upgradeContainer - The container for displaying upgrade options.
- * @constant {HTMLDivElement} upgradeButtonPath1 - The first upgrade button.
- * @constant {HTMLDivElement} upgradeButtonPath2 - The second upgrade button.
- * @constant {HTMLDivElement} upgradeName1 - The name element for the first upgrade button.
- * @constant {HTMLDivElement} upgradeName2 - The name element for the second upgrade button.
- * @constant {HTMLDivElement} imageBox1 - The image box for the first upgrade button.
- * @constant {HTMLDivElement} imageBox2 - The image box for the second upgrade button.
- * @constant {HTMLImageElement} upgradeIMG1 - The image element for the first upgrade button.
- * @constant {HTMLImageElement} upgradeIMG2 - The image element for the second upgrade button.
- * @constant {HTMLDivElement} costLabel1 - The cost label for the first upgrade button.
- * @constant {HTMLDivElement} costLabel2 - The cost label for the second upgrade button.
- * @constant {HTMLDivElement} progressBarContainer1 - The progress bar container for the first upgrade button.
- * @constant {HTMLDivElement} progressBarContainer2 - The progress bar container for the second upgrade button.
- * @constant {HTMLDivElement[]} progressBar1 - The progress bars for the first upgrade button.
- * @constant {HTMLDivElement[]} progressBar2 - The progress bars for the second upgrade button.
- * @constant {Tower | null} currentSelectedTower - The currently selected tower for upgrades.
- * @constant {number} rectSize - The size of each grid cell.
- * @constant {number} towerSize - The size of each tower.
- * @constant {number} enemySize - The size of each enemy.
- * @constant {Tower[]} towerArray - The array to store the towers.
- * @constant {bullet[]} bullets - The array to store bullets.
- * @constant {Enemy[]} enemies - The array to store enemies.
- * @constant {number[]} currentPathIndex - The array to track path indices for multiple enemies.
- * @constant {number} GameHealth - The health of the game.
- * @constant {number} gameCash - The cash available in the game.
- * @constant {number} towerCost - The cost of the tower being placed.
- * @constant {number} SSTC - The cost of the single shot tower.
- * @constant {number} MTC - The cost of the minigun tower.
- * @constant {boolean} gameLost - The flag indicating if the game is lost.
- * @constant {number} currentMapIndex - The index to track the selected map.
- * @constant {gameMap[]} maps - The array to store multiple maps.
- * @constant {number[][]} currentMap - The currently selected map grid.
- * @constant {{ x: number; y: number }[]} currentMapPath - The currently selected map path.
- * @constant {string | null} selectedMap - The selected map from the main menu.
- * @constant {string | null} selectedGamemode - The selected gamemode from the main menu.
- * @constant {boolean} wavesStart - The flag indicating if waves have started.
- * @constant {{ x: number; y: number }[][]} enemyPaths - The array to store enemy paths.
- * @constant {boolean} towerSelected - The flag indicating if a tower is selected.
- * @constant {number} activeEnemiesCount - The number of active enemies.
- * @constant {number} cursorX - The X-coordinate of the cursor.
- * @constant {number} cursorY - The Y-coordinate of the cursor.
- * @constant {number} enemyWavesIndex - The index of the current enemy wave.
- * @constant {number} enemyWaves - The array of enemy waves.
- *
- * @function averageToNumber - Rounds a given value to the nearest multiple of the specified average.
- * @param {number} value - The number to be rounded.
- * @param {number} average - The average or multiple to which the value should be rounded.
- * @returns {number} The value rounded to the nearest multiple of the average.
- *
- * @function updateStatistics - Updates the game statistics displayed on the UI.
- *
- * @function snapToGrid - Snaps coordinates to the nearest grid point.
- * @param {number} value - The value to be snapped.
- * @returns {number} The snapped value.
- *
- * @function updateUIAfterTowerNotClicked - Updates the UI when no tower is clicked.
- *
- * @function spawnEnemy - Spawns a new enemy at the start position.
- *
- * @function gameLoop - The main game loop for rendering and updating game state.
- * @param {number} timestamp - The current timestamp.
- *
- * @function moveEnemies - Moves all enemies along their paths.
- * @param {number} enemySize - The size of each enemy.
- */
 const canvas = document.getElementById('mapCanvas');
-// Create the master container for game stats
-const gameStats = document.createElement('div');
-gameStats.id = "gameStats";
-const bottomContainer = document.getElementById('bottomContainer');
-const rightContainer = document.getElementById('rightContainer');
-// Create the first H2 element with a red outline around each letter
-const h2Red = document.createElement('h2');
-h2Red.id = 'h2Red';
-// Create the second H2 element with a green outline around each letter
-const h2Green = document.createElement('h2');
-h2Green.id = 'h2Green';
-// Create a third H2 element with a blue outline around each letter
-const h2Blue = document.createElement('h2');
-h2Blue.id = 'h2Blue';
-h2Blue.innerText = `Press E to start!`;
-// Append the H2 elements to the gameStats container
-gameStats.appendChild(h2Red);
-gameStats.appendChild(h2Green);
-gameStats.appendChild(h2Blue);
-// Append gameStats to the rightContainer
-if (rightContainer) {
-    rightContainer.appendChild(gameStats);
-}
-// Append the two H2 elements to the gameStats container
-gameStats.appendChild(h2Red);
-gameStats.appendChild(h2Green);
-gameStats.appendChild(h2Blue);
-// Append the gameStats container to the document body
-if (rightContainer)
-    rightContainer.appendChild(gameStats);
-// make a div to store tower info in the right container
-const towerDiv = document.createElement('div');
-towerDiv.id = 'towerDiv';
-if (rightContainer)
-    rightContainer.appendChild(towerDiv);
-// create divs to store tower info in the towerDiv
-const singleShotTowerDiv = document.createElement('div');
-const minigunTowerDiv = document.createElement('div');
-// Create text elements for the towers
-const singleShotTowerText = document.createElement('h3');
-singleShotTowerText.innerText = 'Single Shot\nTower';
-const minigunTowerText = document.createElement('h3');
-minigunTowerText.innerText = 'Minigun\nTower';
-// Create images for the towers
-const singleShotTowerImg = document.createElement('img');
-singleShotTowerImg.src = '/towerImages/SST.jpg';
-singleShotTowerImg.alt = 'Single Shot Tower';
-const minigunTowerImg = document.createElement('img');
-minigunTowerImg.src = '/towerImages/MT.jpg';
-minigunTowerImg.alt = 'Minigun Tower';
-// Create paragraph elements for the towers
-const singleShotTowerHotkey = document.createElement('p');
-singleShotTowerHotkey.innerText = `Hotkey: T`;
-const minigunTowerHotkey = document.createElement('p');
-minigunTowerHotkey.innerText = `Hotkey: S`;
-const singleShotTowerCost = document.createElement('p');
-singleShotTowerCost.id = "SSTCost";
-singleShotTowerCost.innerText = `$100`;
-const minigunTowerCost = document.createElement('p');
-minigunTowerCost.id = "MTCost";
-minigunTowerCost.innerText = `$125`;
-singleShotTowerDiv.appendChild(singleShotTowerText);
-singleShotTowerDiv.appendChild(singleShotTowerImg);
-singleShotTowerDiv.appendChild(singleShotTowerHotkey);
-singleShotTowerDiv.appendChild(singleShotTowerCost);
-minigunTowerDiv.appendChild(minigunTowerText);
-minigunTowerDiv.appendChild(minigunTowerImg);
-minigunTowerDiv.appendChild(minigunTowerHotkey);
-minigunTowerDiv.appendChild(minigunTowerCost);
-if (towerDiv) {
-    towerDiv.appendChild(singleShotTowerDiv);
-    towerDiv.appendChild(minigunTowerDiv);
-}
-const sellButton = document.createElement('button');
-sellButton.id = 'sellButton';
-sellButton.innerText = 'Sell Tower';
-bottomContainer?.appendChild(sellButton);
-const towerStatisticsContainer = document.createElement('div');
-const towerDamage = document.createElement('h2');
-const towerKills = document.createElement('h2');
-towerDamage.innerText = "Damage: 0";
-towerKills.innerText = "Kills: 0";
-towerStatisticsContainer.id = 'towerStatisticsContainer';
-towerStatisticsContainer.appendChild(towerDamage);
-towerStatisticsContainer.appendChild(towerKills);
-if (bottomContainer)
-    bottomContainer.appendChild(towerStatisticsContainer);
 const backToMainMenu = document.getElementsByClassName('backToMainMenu')[0];
 const xButton = document.getElementById('xIcon');
 const settingsModal = document.getElementsByClassName('settingsModal')[0];
 const settingsIcon = document.getElementById('settingsIcon');
-backToMainMenu.addEventListener('click', () => {
-    window.location.href = '../../mainMenu.html';
-});
-xButton.addEventListener('click', () => {
-    settingsModal.classList.remove('active');
-});
-settingsIcon.addEventListener('click', () => {
-    settingsModal.classList.add('active');
-});
 document.addEventListener('DOMContentLoaded', () => {
     let rectSize = 50; // Size of each grid cell, this is the default
     let towerSize = 50; // Size of each tower, this is the default
@@ -382,101 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (event) => {
         if (event.key === 'e' || event.key === 'E') {
             if (selectedGamemode == "waves") {
-                wavesStart = true;
+                spawnEnemy(); // set it to spawn enemy until wave logic is fixed
             }
             else if (selectedGamemode == "sandbox") {
                 spawnEnemy();
             }
         }
     });
-    const upgradeContainer = document.createElement('div');
-    upgradeContainer.id = 'upgradeContainer';
-    // Create the first button with all required elements
-    const upgradeButtonPath1 = document.createElement('div');
-    upgradeButtonPath1.id = 'upgradeButtonPath1';
-    upgradeButtonPath1.className = 'upgradeButton';
-    // Title for Button 1
-    const upgradeName1 = document.createElement('div');
-    upgradeName1.className = 'upgradeName';
-    upgradeName1.innerText = 'Select a tower to upgrade it';
-    // Image Box for Button 1
-    const imageBox1 = document.createElement('div');
-    imageBox1.className = 'imageBox';
-    const upgradeIMG1 = document.createElement('img');
-    upgradeIMG1.className = 'upgradeIMG';
-    upgradeIMG1.alt = 'Upgrade Image 1';
-    imageBox1.appendChild(upgradeIMG1);
-    // Cost Label for Button 1
-    const costLabel1 = document.createElement('div');
-    costLabel1.className = 'costLabel';
-    costLabel1.innerText = 'Select a tower'; // Replace with actual cost
-    // Progress Bar for Button 1
-    const progressBarContainer1 = document.createElement('div');
-    progressBarContainer1.className = 'progressBarContainer';
-    let progressBar1 = [];
-    for (let index = 0; index < 4; index++) {
-        const progressBar = document.createElement('div');
-        progressBar.classList.add('progress-bar'); // Add the styling class
-        progressBar1.push(progressBar); // Add to the array
-        progressBarContainer1.appendChild(progressBar); // Append to the container
-    }
-    // Append all elements to Button 1
-    upgradeButtonPath1.appendChild(upgradeName1);
-    upgradeButtonPath1.appendChild(imageBox1);
-    upgradeButtonPath1.appendChild(costLabel1);
-    upgradeButtonPath1.appendChild(progressBarContainer1);
-    // Create the second button with all required elements
-    const upgradeButtonPath2 = document.createElement('div'); // Use div instead of button for better structure
-    upgradeButtonPath2.id = 'upgradeButtonPath2';
-    upgradeButtonPath2.className = 'upgradeButton'; // Optional: Add a class for additional styling if needed
-    // Title for Button 2
-    const upgradeName2 = document.createElement('div');
-    upgradeName2.className = 'upgradeName';
-    upgradeName2.innerText = 'Select a tower to upgrade it';
-    // Image Box for Button 2
-    const imageBox2 = document.createElement('div');
-    imageBox2.className = 'imageBox';
-    const upgradeIMG2 = document.createElement('img');
-    upgradeIMG2.className = 'upgradeIMG';
-    upgradeIMG2.alt = 'Upgrade Image 2';
-    imageBox2.appendChild(upgradeIMG2);
-    // Cost Label for Button 2
-    const costLabel2 = document.createElement('div');
-    costLabel2.className = 'costLabel';
-    costLabel2.innerText = 'Select a tower'; // Replace with actual cost
-    // Progress Bar for Button 2
-    const progressBarContainer2 = document.createElement('div');
-    progressBarContainer2.className = 'progressBarContainer';
-    let progressBar2 = [];
-    for (let index = 0; index < 4; index++) {
-        const progressBar = document.createElement('div');
-        progressBar.classList.add('progress-bar'); // Add the styling class
-        progressBar2.push(progressBar); // Add to the array
-        progressBarContainer2.appendChild(progressBar); // Append to the container
-    }
-    // Append all elements to Button 2
-    upgradeButtonPath2.appendChild(upgradeName2);
-    upgradeButtonPath2.appendChild(imageBox2);
-    upgradeButtonPath2.appendChild(costLabel2);
-    upgradeButtonPath2.appendChild(progressBarContainer2);
-    // Append both buttons to the parent container
-    upgradeContainer.appendChild(upgradeButtonPath1);
-    upgradeContainer.appendChild(upgradeButtonPath2);
-    // Append the container to the body
-    if (bottomContainer)
-        bottomContainer.appendChild(upgradeContainer);
-    let currentSelectedTower = null;
-    function updateUIAfterTowerNotClicked() {
-        upgradeName1.innerText = 'Select a tower to upgrade it';
-        upgradeName2.innerText = 'Select a tower to upgrade it';
-        costLabel1.innerText = 'Select a tower';
-        costLabel2.innerText = 'Select a tower';
-        removeLightUpBar(4, progressBar1);
-        removeLightUpBar(4, progressBar2);
-        currentSelectedTower = null;
-        towerStatisticsContainer.classList.remove('active');
-        sellButton.classList.remove('active');
-    }
     canvas.addEventListener('mousedown', (event) => {
         let rect = canvas.getBoundingClientRect();
         let mouseX = event.clientX - rect.left;
@@ -528,6 +246,15 @@ document.addEventListener('DOMContentLoaded', () => {
     upgradeButtonPath2.addEventListener('click', () => {
         gameCash = upgradePath2(currentSelectedTower, gameCash, upgradeName1, upgradeName2, costLabel1, costLabel2, progressBar1, progressBar2);
         updateStatistics();
+    });
+    backToMainMenu.addEventListener('click', () => {
+        window.location.href = '../../mainMenu.html';
+    });
+    xButton.addEventListener('click', () => {
+        settingsModal.classList.remove('active');
+    });
+    settingsIcon.addEventListener('click', () => {
+        settingsModal.classList.add('active');
     });
     if (ctx)
         renderMap(ctx, currentMap, towerArray, rectSize, towerSize); // Render the map initially
@@ -581,41 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // if (incomingTowerData){
             //     placeIncomingTower(incomingTowerData.x, incomingTowerData.y, currentMap, incomingTowerData.towerType); // place the incoming tower
             // }
-            if (wavesStart) {
-                let enemyWavesIndex = 0; // First wave
-                const spawnNextWave = () => {
-                    if (enemyWavesIndex < enemyWaves.length) {
-                        let gameWaves = enemyWaves[enemyWavesIndex];
-                        if (gameWaves != null && !gameWaves.waveSent) {
-                            h2Blue.innerText = `Wave: ${gameWaves.waveNumber}/${enemyWaves.length}`;
-                            activeEnemiesCount = gameWaves.enemyCount;
-                            for (let enemyIndex = 0; enemyIndex < gameWaves.enemyCount; enemyIndex++) {
-                                (function (index) {
-                                    setTimeout(() => {
-                                        spawnEnemy(); // Spawn enemy logic
-                                    }, index * gameWaves.timeBetweenEnemies * 1000); // Schedule enemy spawn
-                                })(enemyIndex);
-                            }
-                            // Mark wave as sent after scheduling all enemy spawns
-                            gameWaves.waveSent = true;
-                            // Monitor when all enemies are defeated
-                            const checkEnemies = setInterval(() => {
-                                if (activeEnemiesCount === 0) {
-                                    clearInterval(checkEnemies); // Stop checking once all enemies are defeated
-                                    enemyWavesIndex++; // Move to the next wave
-                                    gameCash += 100 + enemyWavesIndex; // Add money after beating a round
-                                    updateStatistics();
-                                    spawnNextWave(); // Spawn next wave
-                                    if (enemyWavesIndex === enemyWaves.length && activeEnemiesCount === 0) {
-                                        h2Blue.innerText = `YOU WON!`;
-                                    }
-                                }
-                            }, 500); // Check every 500ms for active enemies
-                        }
-                    }
-                };
-                spawnNextWave(); // Start the first wave
-            }
+            // if (wavesStart) {
+            // }
             bullets.forEach((bullet, index) => {
                 const currentTime = performance.now();
                 if (currentTime - bullet.bulletFired >= 250) {
@@ -697,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ctx) {
                 if (GameHealth > 0) {
                     GameHealth -= 1; // Deduct health for reaching the end
+                    activeEnemiesCount -= 1;
                     updateStatistics();
                 }
                 if (GameHealth <= 0) {
@@ -721,6 +416,182 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMap(ctx, currentMap, towerArray, rectSize, towerSize);
     requestAnimationFrame(gameLoop); // Start the animation
 });
+/// <reference path="game.ts" />
+// Create the master container for game stats
+const gameStats = document.createElement('div');
+gameStats.id = "gameStats";
+const bottomContainer = document.getElementById('bottomContainer');
+const rightContainer = document.getElementById('rightContainer');
+// Create the first H2 element with a red outline around each letter
+const h2Red = document.createElement('h2');
+h2Red.id = 'h2Red';
+// Create the second H2 element with a green outline around each letter
+const h2Green = document.createElement('h2');
+h2Green.id = 'h2Green';
+// Create a third H2 element with a blue outline around each letter
+const h2Blue = document.createElement('h2');
+h2Blue.id = 'h2Blue';
+h2Blue.innerText = `Press E to start!`;
+// Append the H2 elements to the gameStats container
+gameStats.appendChild(h2Red);
+gameStats.appendChild(h2Green);
+gameStats.appendChild(h2Blue);
+// Append gameStats to the rightContainer
+if (rightContainer) {
+    rightContainer.appendChild(gameStats);
+}
+// Append the two H2 elements to the gameStats container
+gameStats.appendChild(h2Red);
+gameStats.appendChild(h2Green);
+gameStats.appendChild(h2Blue);
+// Append the gameStats container to the document body
+if (rightContainer)
+    rightContainer.appendChild(gameStats);
+// make a div to store tower info in the right container
+const towerDiv = document.createElement('div');
+towerDiv.id = 'towerDiv';
+if (rightContainer)
+    rightContainer.appendChild(towerDiv);
+// create divs to store tower info in the towerDiv
+const singleShotTowerDiv = document.createElement('div');
+const minigunTowerDiv = document.createElement('div');
+// Create text elements for the towers
+const singleShotTowerText = document.createElement('h3');
+singleShotTowerText.innerText = 'Single Shot\nTower';
+const minigunTowerText = document.createElement('h3');
+minigunTowerText.innerText = 'Minigun\nTower';
+// Create images for the towers
+const singleShotTowerImg = document.createElement('img');
+singleShotTowerImg.src = '/towerImages/SST.jpg';
+singleShotTowerImg.alt = 'Single Shot Tower';
+const minigunTowerImg = document.createElement('img');
+minigunTowerImg.src = '/towerImages/MT.jpg';
+minigunTowerImg.alt = 'Minigun Tower';
+// Create paragraph elements for the towers
+const singleShotTowerHotkey = document.createElement('p');
+singleShotTowerHotkey.innerText = `Hotkey: T`;
+const minigunTowerHotkey = document.createElement('p');
+minigunTowerHotkey.innerText = `Hotkey: S`;
+const singleShotTowerCost = document.createElement('p');
+singleShotTowerCost.id = "SSTCost";
+singleShotTowerCost.innerText = `$100`;
+const minigunTowerCost = document.createElement('p');
+minigunTowerCost.id = "MTCost";
+minigunTowerCost.innerText = `$125`;
+singleShotTowerDiv.appendChild(singleShotTowerText);
+singleShotTowerDiv.appendChild(singleShotTowerImg);
+singleShotTowerDiv.appendChild(singleShotTowerHotkey);
+singleShotTowerDiv.appendChild(singleShotTowerCost);
+minigunTowerDiv.appendChild(minigunTowerText);
+minigunTowerDiv.appendChild(minigunTowerImg);
+minigunTowerDiv.appendChild(minigunTowerHotkey);
+minigunTowerDiv.appendChild(minigunTowerCost);
+if (towerDiv) {
+    towerDiv.appendChild(singleShotTowerDiv);
+    towerDiv.appendChild(minigunTowerDiv);
+}
+const sellButton = document.createElement('button');
+sellButton.id = 'sellButton';
+sellButton.innerText = 'Sell Tower';
+bottomContainer?.appendChild(sellButton);
+const towerStatisticsContainer = document.createElement('div');
+const towerDamage = document.createElement('h2');
+const towerKills = document.createElement('h2');
+towerDamage.innerText = "Damage: 0";
+towerKills.innerText = "Kills: 0";
+towerStatisticsContainer.id = 'towerStatisticsContainer';
+towerStatisticsContainer.appendChild(towerDamage);
+towerStatisticsContainer.appendChild(towerKills);
+if (bottomContainer)
+    bottomContainer.appendChild(towerStatisticsContainer);
+const upgradeContainer = document.createElement('div');
+upgradeContainer.id = 'upgradeContainer';
+// Create the first button with all required elements
+const upgradeButtonPath1 = document.createElement('div');
+upgradeButtonPath1.id = 'upgradeButtonPath1';
+upgradeButtonPath1.className = 'upgradeButton';
+// Title for Button 1
+const upgradeName1 = document.createElement('div');
+upgradeName1.className = 'upgradeName';
+upgradeName1.innerText = 'Select a tower to upgrade it';
+// Image Box for Button 1
+const imageBox1 = document.createElement('div');
+imageBox1.className = 'imageBox';
+const upgradeIMG1 = document.createElement('img');
+upgradeIMG1.className = 'upgradeIMG';
+upgradeIMG1.alt = 'Upgrade Image 1';
+imageBox1.appendChild(upgradeIMG1);
+// Cost Label for Button 1
+const costLabel1 = document.createElement('div');
+costLabel1.className = 'costLabel';
+costLabel1.innerText = 'Select a tower'; // Replace with actual cost
+// Progress Bar for Button 1
+const progressBarContainer1 = document.createElement('div');
+progressBarContainer1.className = 'progressBarContainer';
+let progressBar1 = [];
+for (let index = 0; index < 4; index++) {
+    const progressBar = document.createElement('div');
+    progressBar.classList.add('progress-bar'); // Add the styling class
+    progressBar1.push(progressBar); // Add to the array
+    progressBarContainer1.appendChild(progressBar); // Append to the container
+}
+// Append all elements to Button 1
+upgradeButtonPath1.appendChild(upgradeName1);
+upgradeButtonPath1.appendChild(imageBox1);
+upgradeButtonPath1.appendChild(costLabel1);
+upgradeButtonPath1.appendChild(progressBarContainer1);
+// Create the second button with all required elements
+const upgradeButtonPath2 = document.createElement('div'); // Use div instead of button for better structure
+upgradeButtonPath2.id = 'upgradeButtonPath2';
+upgradeButtonPath2.className = 'upgradeButton'; // Optional: Add a class for additional styling if needed
+// Title for Button 2
+const upgradeName2 = document.createElement('div');
+upgradeName2.className = 'upgradeName';
+upgradeName2.innerText = 'Select a tower to upgrade it';
+// Image Box for Button 2
+const imageBox2 = document.createElement('div');
+imageBox2.className = 'imageBox';
+const upgradeIMG2 = document.createElement('img');
+upgradeIMG2.className = 'upgradeIMG';
+upgradeIMG2.alt = 'Upgrade Image 2';
+imageBox2.appendChild(upgradeIMG2);
+// Cost Label for Button 2
+const costLabel2 = document.createElement('div');
+costLabel2.className = 'costLabel';
+costLabel2.innerText = 'Select a tower'; // Replace with actual cost
+// Progress Bar for Button 2
+const progressBarContainer2 = document.createElement('div');
+progressBarContainer2.className = 'progressBarContainer';
+let progressBar2 = [];
+for (let index = 0; index < 4; index++) {
+    const progressBar = document.createElement('div');
+    progressBar.classList.add('progress-bar'); // Add the styling class
+    progressBar2.push(progressBar); // Add to the array
+    progressBarContainer2.appendChild(progressBar); // Append to the container
+}
+// Append all elements to Button 2
+upgradeButtonPath2.appendChild(upgradeName2);
+upgradeButtonPath2.appendChild(imageBox2);
+upgradeButtonPath2.appendChild(costLabel2);
+upgradeButtonPath2.appendChild(progressBarContainer2);
+// Append both buttons to the parent container
+upgradeContainer.appendChild(upgradeButtonPath1);
+upgradeContainer.appendChild(upgradeButtonPath2);
+// Append the container to the body
+if (bottomContainer)
+    bottomContainer.appendChild(upgradeContainer);
+let currentSelectedTower = null;
+function updateUIAfterTowerNotClicked() {
+    upgradeName1.innerText = 'Select a tower to upgrade it';
+    upgradeName2.innerText = 'Select a tower to upgrade it';
+    costLabel1.innerText = 'Select a tower';
+    costLabel2.innerText = 'Select a tower';
+    removeLightUpBar(4, progressBar1);
+    removeLightUpBar(4, progressBar2);
+    currentSelectedTower = null;
+    towerStatisticsContainer.classList.remove('active');
+    sellButton.classList.remove('active');
+}
 // Clear the canvas before rendering
 function clearCanvas(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -925,18 +796,6 @@ function upgradePath2(currentSelectedTower, gameCash, upgradeButtonPath1, upgrad
     }
     return gameCash;
 }
-const enemyWaves = [
-    { waveNumber: 1, enemyCount: 10, timeBetweenEnemies: 2, waveSent: false },
-    { waveNumber: 2, enemyCount: 20, timeBetweenEnemies: 2, waveSent: false },
-    { waveNumber: 3, enemyCount: 25, timeBetweenEnemies: 1, waveSent: false },
-    { waveNumber: 4, enemyCount: 30, timeBetweenEnemies: 0.5, waveSent: false },
-    { waveNumber: 5, enemyCount: 60, timeBetweenEnemies: 1, waveSent: false },
-    { waveNumber: 6, enemyCount: 20, timeBetweenEnemies: 0.25, waveSent: false },
-    { waveNumber: 7, enemyCount: 100, timeBetweenEnemies: 0.75, waveSent: false },
-    { waveNumber: 8, enemyCount: 80, timeBetweenEnemies: 0.75, waveSent: false },
-    { waveNumber: 9, enemyCount: 100, timeBetweenEnemies: 0.5, waveSent: false },
-    { waveNumber: 10, enemyCount: 100, timeBetweenEnemies: 0.25, waveSent: false },
-];
 class bullet {
     damage;
     towerOfOrigin; // Tower that fired the bullet
@@ -1029,17 +888,14 @@ class bullet {
                 // Collision detected, apply damage, and add it to the total damage dealt by the tower
                 if (!(this.towerOfOrigin.armorPiercing === false && enemy.fortified === true)) {
                     const hpOverflow = enemy.takeDamage(this.damage);
-                    console.log("hpOverflow: " + hpOverflow);
                     if (hpOverflow != null) {
                         if (hpOverflow <= 0) {
-                            console.log("damage + kill");
                             this.towerOfOrigin.addDamageDealt(hpOverflow);
                             if (!this.hitEnemies.has(enemy)) {
                                 this.towerOfOrigin.addEnemyKilled();
                             }
                         }
                         else {
-                            console.log("damage");
                             this.towerOfOrigin.addDamageDealt(0);
                         }
                     }
@@ -1566,7 +1422,7 @@ class MarksmanTower extends Tower {
         PATH2: [150, 450, 750, 12500] // Costs for Path 2
     }, sellValue = 0, totalCost = 100, armorPiercing = false) {
         // Call the parent constructor with correctly ordered values
-        super(150, 5, 1, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
+        super(150, 5, 1000, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
     }
     upgradePath1() {
         if (this.path1Upgrades === 0) {
@@ -1856,3 +1712,16 @@ class minigunTower extends Tower {
         this.path2Upgrades++;
     }
 }
+// todo cant be bothered to fix the wave spawning and enemy coutning logic
+const enemyWaves = [
+    { waveNumber: 1, enemyCount: 10, timeBetweenEnemies: 2, waveSent: false },
+    { waveNumber: 2, enemyCount: 20, timeBetweenEnemies: 2, waveSent: false },
+    { waveNumber: 3, enemyCount: 25, timeBetweenEnemies: 1, waveSent: false },
+    { waveNumber: 4, enemyCount: 30, timeBetweenEnemies: 0.5, waveSent: false },
+    { waveNumber: 5, enemyCount: 60, timeBetweenEnemies: 1, waveSent: false },
+    { waveNumber: 6, enemyCount: 20, timeBetweenEnemies: 0.25, waveSent: false },
+    { waveNumber: 7, enemyCount: 100, timeBetweenEnemies: 0.75, waveSent: false },
+    { waveNumber: 8, enemyCount: 80, timeBetweenEnemies: 0.75, waveSent: false },
+    { waveNumber: 9, enemyCount: 100, timeBetweenEnemies: 0.5, waveSent: false },
+    { waveNumber: 10, enemyCount: 100, timeBetweenEnemies: 0.25, waveSent: false },
+];
