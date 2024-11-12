@@ -59,6 +59,7 @@ io.on('connection', (socket) => {
   // Listen for tower data from a client
   socket.on('towerData', (msg) => {
     // Use the function to broadcast to all other players
+    console.log('Tower data received:', msg);
     sendTowerDataToPlayer(socket, msg.gridX, msg.gridY, msg.towerType);
   });
 

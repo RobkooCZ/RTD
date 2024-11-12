@@ -115,12 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (pressedT) {
                                 tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
-                                sendTowerDataToServer(snappedX, snappedY, "Marksman Tower");
+                                sendTowerDataToServer(gridX, gridY, "Marksman Tower");
                             }
                             else if (pressedS) {
                                 tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
-                                sendTowerDataToServer(snappedX, snappedY, "Minigun Tower");
+                                sendTowerDataToServer(gridX, gridY, "Minigun Tower");
                             }
                             // Ensure tower is assigned before pushing or rendering
                             if (tower) {
@@ -141,22 +141,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    function placeIncomingTower(x, y, grid, towerType) {
+    function placeIncomingTower(gridX, gridY, grid, towerType, gridSize) {
+        let x = gridX * rectSize;
+        let y = gridY * rectSize;
         if (towerType === "Marksman Tower") {
             let tower = new MarksmanTower(x, y, false, rectSize, 5, "Marksman Tower");
             tower.setPositionInGrid(x, y, rectSize);
-            grid[y][x] = 2;
+            grid[gridY][gridX] = 2;
             towerArray.push(tower);
         }
         else if (towerType === "Minigun Tower") {
             let tower = new minigunTower(x, y, false, rectSize, 2, "Minigun Tower");
             tower.setPositionInGrid(x, y, rectSize);
-            grid[y][x] = 3;
+            grid[gridY][gridX] = 3;
             towerArray.push(tower);
         }
-        // towerArray.forEach(tower => {
-        //     tower.render(ctx, towerSize);
-        // });
     }
     // toggle to reset the game
     document.addEventListener('keydown', (event) => {
@@ -303,13 +302,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     sellButton.innerHTML = `Sell Tower for $${tower.sellValue}`;
                 }
             });
-            // incomingTowerData = acceptData(); // accept data from the server
-            // console.log(incomingTowerData);
-            // if (incomingTowerData){
-            //     placeIncomingTower(incomingTowerData.x, incomingTowerData.y, currentMap, incomingTowerData.towerType); // place the incoming tower
-            // }
-            // if (wavesStart) {
-            // }
+            // Retrieve new tower data
+            const newTowerData = getNewTowerData();
+            // Process each new tower placement from other players
+            newTowerData.forEach((towerData) => {
+                console.log('New tower placed by another player:', towerData);
+                placeIncomingTower(towerData.gridX, towerData.gridY, currentMap, towerData.towerType, rectSize);
+            });
             bullets.forEach((bullet, index) => {
                 const currentTime = performance.now();
                 if (currentTime - bullet.bulletFired >= 250) {

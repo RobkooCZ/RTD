@@ -5,9 +5,17 @@ const xButton = document.getElementById('xIcon') as HTMLElement;
 const settingsModal = document.getElementsByClassName('settingsModal')[0] as HTMLElement;
 const settingsIcon = document.getElementById('settingsIcon') as HTMLElement;
 
+// Define the structure of the incoming tower data
+interface TowerData {
+    gridX: number;
+    gridY: number;
+    towerType: string;
+}
+  
 // declare functions from other stuff for server communication
 declare function sendTowerDataToServer(x: number, y: number, towerType: string): void;
 declare function acceptData(): { x: number, y: number, towerType: string };
+declare function getNewTowerData(): TowerData[];
 
 document.addEventListener('DOMContentLoaded', () => {
     let rectSize: number = 50; // Size of each grid cell, this is the default
@@ -102,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.round(value / rectSize) * rectSize;
     }
 
-     // Toggle to spawn a tower
+    // Toggle to spawn a tower
     document.addEventListener('keydown', (event) => {
         let pressedT: boolean = event.key === 't' || event.key === 'T';
         let pressedS: boolean = event.key === 's' || event.key === 'S';
@@ -116,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (pressedT) {
                 towerCost = SSTC;
-            } else if (pressedS) {
+            } else if (pressedS) { 
                 towerCost = MTC;
             }
 
@@ -125,24 +133,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentMap[gridY][gridX] === 0) {
                         if (!towerArray.some(tower => tower.x === snappedX && tower.y === snappedY)) {
                             gameCash -= towerCost;
+
                             if (pressedT) {
                                 currentMap[gridY][gridX] = 2; // Update the map to indicate a Single Shot Tower is placed
                             } else if (pressedS) {
                                 currentMap[gridY][gridX] = 3; // Update the map to indicate a Minigun Tower is placed
                             }
+
                             updateStatistics();
 
                             let tower: Tower | null = null; // Initialize as null
 
-                        if (pressedT) {
-                            tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
-                            tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                            sendTowerDataToServer(snappedX, snappedY, "Marksman Tower");
-                        } else if (pressedS) {
-                            tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
-                            tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                            sendTowerDataToServer(snappedX, snappedY, "Minigun Tower");
-                        }
+                            if (pressedT) {
+                                tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
+                                tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                                sendTowerDataToServer(gridX, gridY, "Marksman Tower");
+                            } else if (pressedS) {
+                                tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
+                                tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                                sendTowerDataToServer(gridX, gridY, "Minigun Tower");
+                            }
 
                     // Ensure tower is assigned before pushing or rendering
                     if (tower) {
@@ -161,21 +171,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function placeIncomingTower(x: number, y: number, grid: number[][], towerType: string): void {
+    
+    function placeIncomingTower(gridX: number, gridY: number, grid: number[][], towerType: string, gridSize: number): void {        
+        let x: number = gridX * rectSize;
+        let y: number = gridY * rectSize;
+        
         if (towerType === "Marksman Tower") {
             let tower = new MarksmanTower(x, y, false, rectSize, 5, "Marksman Tower");
             tower.setPositionInGrid(x, y, rectSize);
-            grid[y][x] = 2;
+            grid[gridY][gridX] = 2;
             towerArray.push(tower);
         } else if (towerType === "Minigun Tower") {
             let tower = new minigunTower(x, y, false, rectSize, 2, "Minigun Tower");
             tower.setPositionInGrid(x, y, rectSize);
-            grid[y][x] = 3;
+            grid[gridY][gridX] = 3;
             towerArray.push(tower);
         }
-        // towerArray.forEach(tower => {
-        //     tower.render(ctx, towerSize);
-        // });
     }
 
     // toggle to reset the game
@@ -344,14 +355,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            // incomingTowerData = acceptData(); // accept data from the server
-            // console.log(incomingTowerData);
-            // if (incomingTowerData){
-            //     placeIncomingTower(incomingTowerData.x, incomingTowerData.y, currentMap, incomingTowerData.towerType); // place the incoming tower
-            // }
+            // Retrieve new tower data
+            const newTowerData: TowerData[] = getNewTowerData();
 
-            // if (wavesStart) {
-            // }
+            // Process each new tower placement from other players
+            newTowerData.forEach((towerData) => {
+                console.log('New tower placed by another player:', towerData);
+                placeIncomingTower(towerData.gridX, towerData.gridY, currentMap, towerData.towerType, rectSize);
+            });
             
             bullets.forEach((bullet, index) => {
                 const currentTime = performance.now();
