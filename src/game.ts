@@ -11,17 +11,24 @@ interface TowerData {
     gridY: number;
     towerType: string;
 }
+
+interface upgradeData {
+    tower: Tower | null;
+    upgradePath: number;
+}
   
 // declare functions from other stuff for server communication
-declare function sendTowerDataToServer(x: number, y: number, towerType: string): void;
-declare function acceptData(): { x: number, y: number, towerType: string };
-declare function getNewTowerData(): TowerData[];
+declare function sendDataToServer(messageType: string, data: Object): void;
+declare function acceptData(messageType: string): void;
+declare function getNewData(messageType: "towerDataForPlayer"): TowerData[];
+declare function getNewData(messageType: "upgradeDataForPlayer"): upgradeData[];
+
+declare function getNewData(messageType: string): TowerData[] | upgradeData[];
 
 document.addEventListener('DOMContentLoaded', () => {
     let rectSize: number = 50; // Size of each grid cell, this is the default
     let towerSize: number = 50; // Size of each tower, this is the default
     let enemySize: number = 25; // Size of each enemy, this is the default
-    let incomingTowerData: { x: number, y: number, towerType: string };
     
     /**
      * Rounds a given value to the nearest multiple of the specified average.
@@ -146,12 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             if (pressedT) {
                                 tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
-                                tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                                sendTowerDataToServer(gridX, gridY, "Marksman Tower");
+                                tower.setPositionInGrid(snappedX, snappedY, rectSize);
+                                const towerData: TowerData = { gridX, gridY, towerType: "Marksman Tower" };
+                                sendDataToServer('towerData', towerData);
                             } else if (pressedS) {
                                 tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize); 
-                                sendTowerDataToServer(gridX, gridY, "Minigun Tower");
+                                const towerData: TowerData = { gridX, gridY, towerType: "Minigun Tower" };
+                                sendDataToServer('towerData', towerData);
                             }
 
                     // Ensure tower is assigned before pushing or rendering
@@ -171,8 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    
-    function placeIncomingTower(gridX: number, gridY: number, grid: number[][], towerType: string, gridSize: number): void {        
+    function placeIncomingTower(gridX: number, gridY: number, grid: number[][], towerType: string): void {        
         let x: number = gridX * rectSize;
         let y: number = gridY * rectSize;
         
@@ -250,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ) {
                 // Set this tower as selected
                 tower.isClicked = true;
-                towerSelected = true;
+                towerSelected = true;   
                 currentSelectedTower = tower;
                 isTowerClicked = true;
 
@@ -282,11 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
     upgradeButtonPath1.addEventListener('click', () => {
         gameCash = upgradePath1(currentSelectedTower, gameCash, upgradeName1, upgradeName2, costLabel1, costLabel2, progressBar1, progressBar2);
+        const upgradeData: upgradeData = { tower: currentSelectedTower, upgradePath: 1 };
+        sendDataToServer('upgradeData', upgradeData);
         updateStatistics();
     });
     
     upgradeButtonPath2.addEventListener('click', () => {
         gameCash = upgradePath2(currentSelectedTower, gameCash, upgradeName1, upgradeName2, costLabel1, costLabel2, progressBar1, progressBar2);
+        const upgradeData: upgradeData = { tower: currentSelectedTower, upgradePath: 2 };
+        sendDataToServer('upgradeData', upgradeData);
         updateStatistics();
     });
 
@@ -356,14 +368,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             // Retrieve new tower data
-            const newTowerData: TowerData[] = getNewTowerData();
+            const newTowerData: TowerData[] = getNewData("towerDataForPlayer");
 
             // Process each new tower placement from other players
             newTowerData.forEach((towerData) => {
                 console.log('New tower placed by another player:', towerData);
-                placeIncomingTower(towerData.gridX, towerData.gridY, currentMap, towerData.towerType, rectSize);
+                placeIncomingTower(towerData.gridX, towerData.gridY, currentMap, towerData.towerType);
             });
-            
+
+            // Retrieve new upgrade data (this should be of type `upgradeData[]`)
+            const newUpgradeData: upgradeData[] = getNewData("upgradeDataForPlayer");
+
+            // Process each new upgrade from other players
+            newUpgradeData.forEach((upgrade) => {
+                console.log('New upgrade by another player:', upgrade);
+                
+                if (upgrade.tower){
+                    towerArray.forEach(tower => {
+                        if (tower.gridX === upgrade.tower?.gridX && tower.gridY === upgrade.tower?.gridY) {
+                            // If the tower is not null, apply the upgrade
+                            console.log(`Upgrading tower at (${upgrade.tower.gridX}, ${upgrade.tower.gridY}) with upgrade path: ${upgrade.upgradePath}`);
+                            upgrade.upgradePath === 1 ? tower.upgradePath1() : tower.upgradePath2();
+                        }
+                    });
+                }
+            }); 
+
             bullets.forEach((bullet, index) => {
                 const currentTime = performance.now();
 

@@ -1,37 +1,44 @@
 const socket = io();
 
-// Array to store incoming tower data
-const receivedTowerData = [];
+// Object to store incoming data for different message types
+const receivedData = {
+  towerData: [],
+  upgradeData: []
+};
 
 /**
- * Sends tower data to the server.
- * @param {number} gridX - The grid X-coordinate of the tower.
- * @param {number} gridY - The grid Y-coordinate of the tower.
- * @param {string} towerType - The type of tower being placed.
+ * Sends data to the server with a specified type.
+ * @param {string} messageType - The type of message (e.g., 'towerData', 'upgradeData').
+ * @param {Object} data - The data to send to the server.
  */
-function sendTowerDataToServer(gridX, gridY, towerType) {
-  socket.emit('towerData', { gridX, gridY, towerType });
+function sendDataToServer(messageType, data) {
+  socket.emit(messageType, data);
 }
 
 /**
- * Listens for incoming tower data from other players and stores it.
+ * Listens for incoming data from other players based on message type and stores it.
+ * @param {string} messageType - The type of message to listen for (e.g., 'towerDataForPlayer', 'upgradeDataForPlayer').
  */
-function acceptData() {
-  socket.on('towerDataForPlayer', (msg) => {
-    receivedTowerData.push(msg); // Store the received tower data
+function acceptData(messageType) {
+  socket.on(messageType, (msg) => {
+    if (receivedData[messageType]) {
+      receivedData[messageType].push(msg); // Store the received data
+    }
   });
 }
 
 /**
- * Retrieves and clears the stored tower data.
+ * Retrieves and clears the stored data for a specific message type.
  * Call this in the game loop to get new data and avoid duplicates.
- * @returns {Array} An array of new tower data messages.
+ * @param {string} messageType - The type of message to retrieve (e.g., 'towerData', 'upgradeData').
+ * @returns {Array} An array of new data messages for the specified message type.
  */
-function getNewTowerData() {
-  const data = [...receivedTowerData]; // Copy the data
-  receivedTowerData.length = 0; // Clear the stored data
+function getNewData(messageType) {
+  const data = [...(receivedData[messageType] || [])]; // Copy the data if it exists
+  receivedData[messageType] = []; // Clear the stored data
   return data;
 }
 
-// Initialize the data listener
-acceptData();
+// Initialize data listeners for specific message types
+acceptData('towerDataForPlayer');
+acceptData('upgradeDataForPlayer');

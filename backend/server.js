@@ -47,20 +47,32 @@ app.get('/', (req, res) => {
 *************************************************
 */
 
-// Function to broadcast tower data to all players except the sender
-function sendTowerDataToPlayer(socket, gridX, gridY, towerType) {
-  socket.broadcast.emit('towerDataForPlayer', { gridX, gridY, towerType });
+/**
+ * Broadcasts a message with data to all players except the sender.
+ * @param {Socket} socket - The socket object of the sender.
+ * @param {string} messageType - The type of message (e.g., 'towerData', 'playerMove').
+ * @param {Object} data - The data to broadcast, structured according to the messageType.
+ */
+function broadcastMessage(socket, messageType, data) {
+  socket.broadcast.emit(messageType, data);
 }
+
 
 // Set up connection event listener for Socket.IO
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Listen for tower data from a client
   socket.on('towerData', (msg) => {
-    // Use the function to broadcast to all other players
     console.log('Tower data received:', msg);
-    sendTowerDataToPlayer(socket, msg.gridX, msg.gridY, msg.towerType);
+    // Broadcasting the data to all other players
+    broadcastMessage(socket, 'towerDataForPlayer', msg);
+  });
+
+  // Listen for upgrade data from a client
+  socket.on('upgradeData', (msg) => {
+    // Use the function to broadcast to all other players
+    console.log('Upgrade data received:', msg);
+    broadcastMessage(socket, 'upgradeDataForPlayer', msg);
   });
 
   // Handle user disconnection
