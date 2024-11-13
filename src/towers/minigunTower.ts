@@ -26,7 +26,7 @@ class minigunTower extends Tower {
         },
         sellValue: number = 0,
         totalCost: number = 125,
-        armorPiercing: boolean = false,
+        armorPiercing: boolean = false
     ) {
         // Call the parent constructor with specific values for MinigunTower
         super(100, 2, 10, x, y, 100, gridSize, isClicked, pierce, name, UPGRADE_COSTS, sellValue, totalCost);
@@ -41,17 +41,24 @@ class minigunTower extends Tower {
         ctx.fill();
 
         // Draw the border around the tower
-        if (this.path1Upgrades === 1) {
-            ctx.strokeStyle = 'red'; // Set color for the border
-        }else if (this.path1Upgrades === 2) {
-            ctx.strokeStyle = 'purple'; // Set color for the border
-        }else if (this.path1Upgrades === 3) {
-            ctx.strokeStyle = 'blue'; // Set color for the border
-        }else if (this.path1Upgrades === 4) {
-            ctx.strokeStyle = 'green'; // Set color for the border
-        }else {
-            ctx.strokeStyle = 'white'; // Set color for the border
+        switch (this.path1Upgrades) {
+            case 1:
+                ctx.strokeStyle = this.towerOwner === getSocketID() ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 0, 0, 0.3)'; // Red color
+                break;
+            case 2:
+                ctx.strokeStyle = this.towerOwner === getSocketID() ? 'rgba(128, 0, 128, 1)' : 'rgba(128, 0, 128, 0.3)'; // Purple color
+                break;
+            case 3:
+                ctx.strokeStyle = this.towerOwner === getSocketID() ? 'rgba(0, 0, 255, 1)' : 'rgba(0, 0, 255, 0.3)'; // Blue color
+                break;
+            case 4:
+                ctx.strokeStyle = this.towerOwner === getSocketID() ? 'rgba(0, 128, 0, 1)' : 'rgba(0, 128, 0, 0.3)'; // Green color
+                break;
+            default:
+                ctx.strokeStyle = this.towerOwner === getSocketID() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.3)'; // White color
+                break;
         }
+
 
         ctx.lineWidth = 2; // Set line width for the border
 
@@ -83,16 +90,22 @@ class minigunTower extends Tower {
         const smallSquareX = this.x + (this.size - smallSquareSize) / 2; // Centered x position
         const smallSquareY = this.y + (this.size - smallSquareSize) / 2; // Centered y position
 
-        if (this.path2Upgrades === 1) {
-            ctx.fillStyle = 'red'; // Set color
-        }else if (this.path2Upgrades === 2) {
-            ctx.fillStyle = 'purple'; // Set color
-        }else if (this.path2Upgrades === 3) {
-            ctx.fillStyle = 'blue'; // Set color
-        }else if (this.path2Upgrades === 4) {
-            ctx.fillStyle = 'green'; // Set color
-        }else {
-            ctx.fillStyle = 'white'; // Set color
+        switch (this.path2Upgrades) {
+            case 1:
+                ctx.fillStyle = this.towerOwner === getSocketID() ? 'rgba(255, 0, 0, 1)' : 'rgba(255, 0, 0, 0.3)'; // Red color
+                break;
+            case 2:
+                ctx.fillStyle = this.towerOwner === getSocketID() ? 'rgba(128, 0, 128, 1)' : 'rgba(128, 0, 128, 0.3)'; // Purple color
+                break;
+            case 3:
+                ctx.fillStyle = this.towerOwner === getSocketID() ? 'rgba(0, 0, 255, 1)' : 'rgba(0, 0, 255, 0.3)'; // Blue color
+                break;
+            case 4:
+                ctx.fillStyle = this.towerOwner === getSocketID() ? 'rgba(0, 128, 0, 1)' : 'rgba(0, 128, 0, 0.3)'; // Green color
+                break;
+            default:
+                ctx.fillStyle = this.towerOwner === getSocketID() ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.3)'; // White color
+                break;
         }
 
         ctx.fillRect(smallSquareX, smallSquareY, smallSquareSize, smallSquareSize); // Draw the small square

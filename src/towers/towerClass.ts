@@ -25,6 +25,7 @@ abstract class Tower {
     public damageDealt: number = 0;
     public enemiesKilled: number = 0;
     public armorPiercing: boolean = false;
+    public towerOwner: string = 'Player';
 
     constructor(
         range: number, 

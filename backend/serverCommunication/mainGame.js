@@ -39,6 +39,14 @@ function getNewData(messageType) {
   return data;
 }
 
+/**
+ * Retrieves the socket ID of the current connection.
+ * @returns {string} The socket ID.
+ */
+function getSocketID() {
+  return socket.id;
+}
+
 // Initialize data listeners for specific message types
 acceptData('towerDataForPlayer');
 acceptData('upgradeDataForPlayer');

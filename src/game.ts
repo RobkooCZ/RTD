@@ -22,8 +22,8 @@ declare function sendDataToServer(messageType: string, data: Object): void;
 declare function acceptData(messageType: string): void;
 declare function getNewData(messageType: "towerDataForPlayer"): TowerData[];
 declare function getNewData(messageType: "upgradeDataForPlayer"): upgradeData[];
-
 declare function getNewData(messageType: string): TowerData[] | upgradeData[];
+declare function getSocketID(): string;
 
 document.addEventListener('DOMContentLoaded', () => {
     let rectSize: number = 50; // Size of each grid cell, this is the default
@@ -154,11 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (pressedT) {
                                 tower = new MarksmanTower(snappedX, snappedY, false, rectSize, 5, "Marksman Tower");
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize);
+                                tower.towerOwner = getSocketID();
                                 const towerData: TowerData = { gridX, gridY, towerType: "Marksman Tower" };
                                 sendDataToServer('towerData', towerData);
                             } else if (pressedS) {
                                 tower = new minigunTower(snappedX, snappedY, false, rectSize, 2, "Minigun Tower"); 
                                 tower.setPositionInGrid(snappedX, snappedY, rectSize); 
+                                tower.towerOwner = getSocketID();
                                 const towerData: TowerData = { gridX, gridY, towerType: "Minigun Tower" };
                                 sendDataToServer('towerData', towerData);
                             }
@@ -249,12 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSelectedTower = null;
         }
 
-        // Loop through towers to check which one is clicked and display some UI
+        // Loop through towers to check which one is clicked and display UI
         for (let index = 0; index < towerArray.length; index++) {
             const tower = towerArray[index];
             if (
                 mouseX >= tower.x && mouseX <= tower.x + towerSize &&
-                mouseY >= tower.y && mouseY <= tower.y + towerSize
+                mouseY >= tower.y && mouseY <= tower.y + towerSize &&
+                tower.towerOwner === getSocketID()
             ) {
                 // Set this tower as selected
                 tower.isClicked = true;
