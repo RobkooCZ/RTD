@@ -10,6 +10,7 @@
 - No wave logic
 - Differences in files and code structure, here it's more organized and not all in one file
 - Backend
+- Simple lobby system where you can join a lobby using lobby id, and you see a player list. very primitive, WIP!!!!!!!!!!
 
 ## Currently working on:
 - Simple multiplayer

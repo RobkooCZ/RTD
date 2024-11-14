@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmGamemodeButton = document.getElementsByClassName('confirmGamemode')[0];
     const backButton1 = document.getElementsByClassName('backButton')[0];
     const backButton2 = document.getElementsByClassName('backButton')[1];
+    const backButton3 = document.getElementsByClassName('backButton')[2];
+    const spButton = document.getElementById('spButton');
+    const mpButton = document.getElementById('mpButton');
+    const userPlayerChoice = document.getElementsByClassName('userPlayerChoice')[0];
 
     clearAllRadioChoices(allRadios);   
 
@@ -26,12 +30,29 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (menuStage === 1) {
             buttonsDiv.classList.add('active');
+            userPlayerChoice.classList.add('active');
+        }
+    });
+
+
+    spButton.addEventListener('click', function() {
+        localStorage.setItem('selectedPlayer', 'singleplayer');
+        menuStage++;
+
+        if (menuStage === 2) {
+            buttonsDiv.classList.add('active');
+            userPlayerChoice.classList.remove('active');
             userMapChoice.classList.add('active');
         }
     });
 
+    mpButton.addEventListener('click', function() {
+        localStorage.setItem('selectedPlayer', 'multiplayer');
+        window.location.href = '/html/lobby.html';
+    });
+
     confirmButton.addEventListener('click', function() {
-        if (menuStage === 1) {
+        if (menuStage === 2) {
             // Check if any radio button is checked
             const isAnyRadioChecked = Array.from(mapRadios).some(radio => radio.checked);
 
@@ -49,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     confirmGamemodeButton.addEventListener('click', function() {
-        if(menuStage === 2){
+        if(menuStage === 3){
             const isAnyRadioChecked = Array.from(gamemodeRadios).some(radio => radio.checked);
             if (!isAnyRadioChecked){
                 alert('Please select a gamemode before proceeding.');
@@ -66,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     backButton1.addEventListener('click', function() {
         if (menuStage === 1) {
-            userMapChoice.classList.remove('active');
+            userPlayerChoice.classList.remove('active');
             buttonsDiv.classList.remove('active');
             menuStage--;
         } 
@@ -74,6 +95,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     backButton2.addEventListener('click', function() {
         if (menuStage === 2) {
+            userMapChoice.classList.remove('active');
+            userPlayerChoice.classList.add('active');
+            menuStage--;
+        }
+    });
+
+    backButton3.addEventListener('click', function() {
+        if (menuStage === 3) {
             userGamemodeChoice.classList.remove('active');
             userMapChoice.classList.add('active');
             menuStage--;

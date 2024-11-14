@@ -27,8 +27,7 @@
         1px 1px 0 #fff;
 }
 
-.buttonsDiv {
-    display: flex;
+.buttonsDiv, .userPlayerChoice {
     flex-direction: column;
     gap: 1vw;
     justify-content: center;
@@ -38,6 +37,14 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.userPlayerChoice {
+    display: none;
+}
+
+.buttonsDiv{
+    display:flex;
 }
 
 .buttons{
@@ -109,7 +116,7 @@ input[type="radio"]:checked + .radios {
     color: black; /* Change text color for contrast */
 }
 
-.userMapChoice.active, .userGamemodeChoice.active{
+.userMapChoice.active, .userGamemodeChoice.active, .userPlayerChoice.active{
     display: flex;
 }
 

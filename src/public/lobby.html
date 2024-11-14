@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby</title>
+    <link rel="stylesheet" href="styles/lobby.css">
+</head>
+<body>
+    <h1>Welcome to lobby</h1>
+    <div class="lobby" id="lobby">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <button type="submit" onclick="createLobby()" id="createLobbyButton">Create lobby</button>
+        <br>
+        <label for="username">Lobby ID:</label>
+        <input type="text" id="lobbyID" name="lobbyID" required>
+        <button type="submit" onclick="joinLobby()" id="joinLobbyButton">Join Lobby</button>
+    </div>
+
+    <div class="mainLobby" id="mainLobby">
+        <div id="playerDiv">
+            <h2>Players: </h2>
+            <ul id="playerList">
+                
+            </ul>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/dist/lobby.js"></script>
+</body>
+</html>
