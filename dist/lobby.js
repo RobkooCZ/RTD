@@ -2,13 +2,17 @@ const socket = io();
 const createLobbyButton = document.getElementById("createLobbyButton");
 const joinLobbyButton = document.getElementById("joinLobbyButton");
 const lobbyDiv = document.getElementById('lobby');
+const mainLobby = document.getElementById('mainLobby');
 const playerList = document.getElementById('playerList'); 
+const lobbyIDh2 = document.querySelector('.lobbyID');
 let lobbyCreation = false;
 
 createLobbyButton.addEventListener('click', function() {
     socket.on("lobbyCreated", (lobbyId, socketId, playerName) => {
         if (socketId === socket.id){
             lobbyDiv.classList.add('active');
+            mainLobby.classList.add('active');
+            lobbyIDh2.textContent = `Lobby ID: ${lobbyId}`;
             const listItem = document.createElement('li');
             listItem.textContent = playerName;
             playerList.appendChild(listItem);
@@ -20,6 +24,8 @@ joinLobbyButton.addEventListener('click', function() {
     socket.on("joinedLobby", (lobbyId) => {
         if (lobbyId === document.getElementById('lobbyID').value){
             lobbyDiv.classList.add('active');
+            mainLobby.classList.add('active');
+            lobbyIDh2.textContent = `Lobby ID: ${lobbyId}`;
         }
     });
 });

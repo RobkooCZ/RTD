@@ -49,12 +49,22 @@ body {
     }
 
     .mainLobby{
-        /* display: none; */
-        
+        display: none;
     }
-
-    .mainLobby.active{
+    
+    .mainLobby.active {
         display: flex;
+        flex-direction: column;
+        justify-content: flex-start;  
+        align-items: center; 
+        position: relative;
+        top: 0; 
+        left: 50%;
+        transform: translateX(-50%);
+        .lobbyID {
+            text-align: center;
+            margin-top: 1vh;
+        }
     }
 }
 
