@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userMapChoice = document.getElementsByClassName('userMapChoice')[0];
     const userGamemodeChoice = document.getElementsByClassName('userGamemodeChoice')[0];
     const confirmButton = document.getElementsByClassName('confirmMap')[0];
-    const allRadios= document.querySelectorAll('input[type="radio"]');
+    const allRadios = document.querySelectorAll('input[type="radio"]');
     const mapRadios = document.querySelectorAll('.userMapChoice input[type="radio"]');
     const gamemodeRadios = document.querySelectorAll('.userGamemodeChoice input[type="radio"]');
     const confirmGamemodeButton = document.getElementsByClassName('confirmGamemode')[0];

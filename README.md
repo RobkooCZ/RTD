@@ -9,7 +9,8 @@
 - Made the towers that aren't yours darker on the map to differentiate your and other peoples' towers
 - No wave logic
 - Differences in files and code structure, here it's more organized and not all in one file
-- Backend
+- Added checks so you have to input something to the field before getting into a lobby
+- Added options to choose what you want to play in multiplayer
 - Simple lobby system where you can join a lobby using lobby id, and you see a player list. very primitive, WIP!!!!!!!!!!
 
 ## Currently working on:

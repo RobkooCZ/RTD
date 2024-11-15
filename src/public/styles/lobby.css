@@ -65,6 +65,16 @@ body {
             text-align: center;
             margin-top: 1vh;
         }
+        button{
+            background-color: black;
+            color: white;
+            border: .1vh solid white;
+            border-radius: 0.5vh;
+            transition: ease-in-out .2s;
+            padding: 0.2vh;
+            font-size: 1em;
+            cursor: pointer;
+        }
     }
 }
 

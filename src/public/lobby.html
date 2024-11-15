@@ -23,9 +23,27 @@
         <div id="playerDiv">
             <h2>Players: </h2>
             <ul id="playerList">
-                
+                <!-- Players' names will be appended here -->
             </ul>
         </div>
+
+        <div class="mapOptions">
+            <h3>Select Map:</h3>
+            <input type="radio" id="basicMap" name="map" value="basic">
+            <label for="basicMap">Basic Map</label>
+            <input type="radio" id="easyMap" name="map" value="easy">
+            <label for="easyMap">Easy Map</label>
+        </div>
+
+        <div class="gameModeOptions">
+            <h3>Select Game Mode:</h3>
+            <input type="radio" id="waveMode" name="gameMode" value="wave">
+            <label for="waveMode">Wave</label>
+            <input type="radio" id="sandboxMode" name="gameMode" value="sandbox">
+            <label for="sandboxMode">Sandbox</label>
+        </div>
+
+        <button id="startButton">Start Game</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
